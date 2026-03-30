@@ -1,0 +1,116 @@
+---
+interface Props {
+	title?: string;
+	description?: string;
+}
+
+const {
+	title = "Luca Silverentand",
+	description = "iOS developer, Rust enthusiast, and AI tooling builder. Runs SevenTwo Studio.",
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta name="description" content={description} />
+		<meta name="author" content="Luca Silverentand" />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		<meta property="og:type" content="website" />
+		<meta property="og:url" content="https://lucasilverentand.com" />
+		<meta name="twitter:card" content="summary" />
+		<meta name="twitter:title" content={title} />
+		<meta name="twitter:description" content={description} />
+		<title>{title}</title>
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap"
+			rel="stylesheet"
+		/>
+	</head>
+	<body>
+		<slot />
+	</body>
+</html>
+
+<style is:global>
+	:root {
+		--bg: #080808;
+		--bg-2: #0e0e0e;
+		--bg-3: #141414;
+		--border: #1e1e1e;
+		--border-2: #2a2a2a;
+		--text-1: #ededed;
+		--text-2: #999999;
+		--text-3: #555555;
+		--accent: #ff5c1a;
+		--accent-dim: rgba(255, 92, 26, 0.12);
+		--accent-glow: rgba(255, 92, 26, 0.25);
+
+		--font-display: "DM Serif Display", Georgia, serif;
+		--font-mono: "DM Mono", "Cascadia Code", "JetBrains Mono", monospace;
+		--font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+		--lang-swift: #ff453a;
+		--lang-rust: #e05a00;
+		--lang-ts: #3b82f6;
+		--lang-js: #eab308;
+		--lang-python: #4b91f7;
+	}
+
+	*, *::before, *::after {
+		box-sizing: border-box;
+		margin: 0;
+		padding: 0;
+	}
+
+	html {
+		font-size: 16px;
+		scroll-behavior: smooth;
+	}
+
+	body {
+		background-color: var(--bg);
+		color: var(--text-1);
+		font-family: var(--font-body);
+		line-height: 1.6;
+		-webkit-font-smoothing: antialiased;
+		-moz-osx-font-smoothing: grayscale;
+		overflow-x: hidden;
+	}
+
+	::selection {
+		background: var(--accent);
+		color: #fff;
+	}
+
+	a {
+		color: inherit;
+		text-decoration: none;
+	}
+
+	img {
+		max-width: 100%;
+		display: block;
+	}
+
+	/* Scrollbar */
+	::-webkit-scrollbar {
+		width: 6px;
+	}
+	::-webkit-scrollbar-track {
+		background: var(--bg);
+	}
+	::-webkit-scrollbar-thumb {
+		background: var(--border-2);
+		border-radius: 3px;
+	}
+	::-webkit-scrollbar-thumb:hover {
+		background: var(--text-3);
+	}
+</style>

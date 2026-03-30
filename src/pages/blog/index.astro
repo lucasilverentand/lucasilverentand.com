@@ -1,0 +1,213 @@
+---
+import { getCollection } from "astro:content";
+import Layout from "../../layouts/Layout.astro";
+
+const posts = (await getCollection("blog", ({ data }) => !data.draft)).sort(
+	(a, b) => b.data.date.getTime() - a.data.date.getTime(),
+);
+
+function formatDate(date: Date) {
+	return date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+}
+---
+
+<Layout title="Blog — Luca Silverentand" description="Writing about Rust, Swift, AI tooling, and building things.">
+	<nav>
+		<div class="wrap">
+			<a href="/" class="logo">LS</a>
+			<div class="nav-links">
+				<a href="/blog" class="active">Blog</a>
+				<a href="https://github.com/lucasilverentand" target="_blank" rel="noopener">GitHub</a>
+			</div>
+		</div>
+	</nav>
+
+	<main>
+		<section class="blog-hero">
+			<div class="wrap">
+				<h1>Blog</h1>
+				<p class="subtitle">Writing about Rust, Swift, AI tooling, and building things.</p>
+			</div>
+		</section>
+
+		<section class="posts">
+			<div class="wrap">
+				{posts.map((post) => (
+					<a href={`/blog/${post.id}`} class="post-card">
+						<div class="post-meta">
+							<time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
+							<div class="post-tags">
+								{post.data.tags.map((tag) => (
+									<span class="tag">{tag}</span>
+								))}
+							</div>
+						</div>
+						<h2>{post.data.title}</h2>
+						<p>{post.data.description}</p>
+					</a>
+				))}
+
+				{posts.length === 0 && (
+					<p class="empty">No posts yet. Check back soon.</p>
+				)}
+			</div>
+		</section>
+	</main>
+
+	<footer>
+		<div class="wrap">
+			<span>Luca Silverentand &copy; 2025</span>
+			<div class="footer-links">
+				<a href="/">Home</a>
+				<a href="https://github.com/lucasilverentand" target="_blank" rel="noopener">GitHub</a>
+			</div>
+		</div>
+	</footer>
+</Layout>
+
+<style>
+	.wrap {
+		max-width: 960px;
+		margin: 0 auto;
+		padding: 0 24px;
+	}
+
+	/* ── Nav ── */
+	nav {
+		position: sticky;
+		top: 0;
+		z-index: 50;
+		background: rgba(10, 10, 10, 0.8);
+		backdrop-filter: blur(12px);
+		-webkit-backdrop-filter: blur(12px);
+		border-bottom: 1px solid var(--border);
+	}
+	nav .wrap {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		height: 52px;
+	}
+	.logo {
+		font-family: var(--font-mono);
+		font-size: 14px;
+		font-weight: 500;
+		color: var(--text-1);
+		letter-spacing: 0.04em;
+	}
+	.nav-links {
+		display: flex;
+		gap: 24px;
+	}
+	.nav-links a {
+		font-family: var(--font-mono);
+		font-size: 13px;
+		color: var(--text-3);
+		transition: color 0.15s;
+	}
+	.nav-links a:hover,
+	.nav-links a.active { color: var(--text-1); }
+
+	/* ── Blog hero ── */
+	.blog-hero {
+		padding: 100px 0 60px;
+	}
+	.blog-hero h1 {
+		font-family: var(--font-display);
+		font-size: clamp(40px, 6vw, 64px);
+		font-weight: 400;
+		line-height: 1;
+		letter-spacing: -0.025em;
+		margin-bottom: 16px;
+	}
+	.subtitle {
+		font-size: 17px;
+		color: var(--text-2);
+		line-height: 1.6;
+	}
+
+	/* ── Posts ── */
+	.posts {
+		padding-bottom: 80px;
+	}
+	.post-card {
+		display: block;
+		padding: 28px 0;
+		border-bottom: 1px solid var(--border);
+		transition: opacity 0.15s;
+	}
+	.post-card:first-child {
+		border-top: 1px solid var(--border);
+	}
+	.post-card:hover {
+		opacity: 0.8;
+	}
+	.post-meta {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		margin-bottom: 10px;
+	}
+	.post-meta time {
+		font-family: var(--font-mono);
+		font-size: 12px;
+		color: var(--text-3);
+	}
+	.post-tags {
+		display: flex;
+		gap: 6px;
+	}
+	.tag {
+		font-family: var(--font-mono);
+		font-size: 11px;
+		color: var(--accent);
+		background: var(--accent-dim);
+		padding: 2px 8px;
+		border-radius: 4px;
+	}
+	.post-card h2 {
+		font-family: var(--font-display);
+		font-size: 26px;
+		font-weight: 400;
+		line-height: 1.2;
+		margin-bottom: 8px;
+	}
+	.post-card p {
+		font-size: 15px;
+		line-height: 1.6;
+		color: var(--text-2);
+		max-width: 640px;
+	}
+	.empty {
+		font-size: 15px;
+		color: var(--text-3);
+		padding: 40px 0;
+	}
+
+	/* ── Footer ── */
+	footer {
+		border-top: 1px solid var(--border);
+		padding: 28px 0;
+	}
+	footer .wrap {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+	}
+	footer span {
+		font-family: var(--font-mono);
+		font-size: 12px;
+		color: var(--text-3);
+	}
+	.footer-links {
+		display: flex;
+		gap: 20px;
+	}
+	.footer-links a {
+		font-family: var(--font-mono);
+		font-size: 12px;
+		color: var(--text-3);
+		transition: color 0.15s;
+	}
+	.footer-links a:hover { color: var(--text-1); }
+</style>

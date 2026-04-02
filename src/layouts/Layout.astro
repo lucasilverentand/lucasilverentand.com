@@ -8,6 +8,8 @@ const {
 	title = "Luca Silverentand",
 	description = "iOS developer, Rust enthusiast, and AI tooling builder. Runs SevenTwo Studio.",
 } = Astro.props;
+
+const canonicalUrl = new URL(Astro.url.pathname, Astro.site).href;
 ---
 
 <!doctype html>
@@ -20,10 +22,13 @@ const {
 		<meta property="og:title" content={title} />
 		<meta property="og:description" content={description} />
 		<meta property="og:type" content="website" />
-		<meta property="og:url" content="https://lucasilverentand.com" />
-		<meta name="twitter:card" content="summary" />
+		<meta property="og:url" content={canonicalUrl} />
+		<meta property="og:image" content={new URL("/og.png", Astro.site).href} />
+		<meta name="twitter:card" content="summary_large_image" />
 		<meta name="twitter:title" content={title} />
 		<meta name="twitter:description" content={description} />
+		<meta name="twitter:image" content={new URL("/og.png", Astro.site).href} />
+		<link rel="canonical" href={canonicalUrl} />
 		<title>{title}</title>
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -81,7 +86,7 @@ const {
 		line-height: 1.6;
 		-webkit-font-smoothing: antialiased;
 		-moz-osx-font-smoothing: grayscale;
-		overflow-x: hidden;
+		overflow-x: clip;
 	}
 
 	::selection {

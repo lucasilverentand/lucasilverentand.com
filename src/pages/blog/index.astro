@@ -1,6 +1,8 @@
 ---
 import { getCollection } from "astro:content";
 import Layout from "../../layouts/Layout.astro";
+import Nav from "../../components/Nav.astro";
+import Footer from "../../components/Footer.astro";
 
 const posts = (await getCollection("blog", ({ data }) => !data.draft)).sort(
 	(a, b) => b.data.date.getTime() - a.data.date.getTime(),
@@ -12,15 +14,7 @@ function formatDate(date: Date) {
 ---
 
 <Layout title="Blog — Luca Silverentand" description="Writing about Rust, Swift, AI tooling, and building things.">
-	<nav>
-		<div class="wrap">
-			<a href="/" class="logo">LS</a>
-			<div class="nav-links">
-				<a href="/blog" class="active">Blog</a>
-				<a href="https://github.com/lucasilverentand" target="_blank" rel="noopener">GitHub</a>
-			</div>
-		</div>
-	</nav>
+	<Nav active="blog" />
 
 	<main>
 		<section class="blog-hero">
@@ -54,15 +48,7 @@ function formatDate(date: Date) {
 		</section>
 	</main>
 
-	<footer>
-		<div class="wrap">
-			<span>Luca Silverentand &copy; 2025</span>
-			<div class="footer-links">
-				<a href="/">Home</a>
-				<a href="https://github.com/lucasilverentand" target="_blank" rel="noopener">GitHub</a>
-			</div>
-		</div>
-	</footer>
+	<Footer />
 </Layout>
 
 <style>
@@ -71,42 +57,6 @@ function formatDate(date: Date) {
 		margin: 0 auto;
 		padding: 0 24px;
 	}
-
-	/* ── Nav ── */
-	nav {
-		position: sticky;
-		top: 0;
-		z-index: 50;
-		background: rgba(10, 10, 10, 0.8);
-		backdrop-filter: blur(12px);
-		-webkit-backdrop-filter: blur(12px);
-		border-bottom: 1px solid var(--border);
-	}
-	nav .wrap {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		height: 52px;
-	}
-	.logo {
-		font-family: var(--font-mono);
-		font-size: 14px;
-		font-weight: 500;
-		color: var(--text-1);
-		letter-spacing: 0.04em;
-	}
-	.nav-links {
-		display: flex;
-		gap: 24px;
-	}
-	.nav-links a {
-		font-family: var(--font-mono);
-		font-size: 13px;
-		color: var(--text-3);
-		transition: color 0.15s;
-	}
-	.nav-links a:hover,
-	.nav-links a.active { color: var(--text-1); }
 
 	/* ── Blog hero ── */
 	.blog-hero {
@@ -183,31 +133,4 @@ function formatDate(date: Date) {
 		color: var(--text-3);
 		padding: 40px 0;
 	}
-
-	/* ── Footer ── */
-	footer {
-		border-top: 1px solid var(--border);
-		padding: 28px 0;
-	}
-	footer .wrap {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-	}
-	footer span {
-		font-family: var(--font-mono);
-		font-size: 12px;
-		color: var(--text-3);
-	}
-	.footer-links {
-		display: flex;
-		gap: 20px;
-	}
-	.footer-links a {
-		font-family: var(--font-mono);
-		font-size: 12px;
-		color: var(--text-3);
-		transition: color 0.15s;
-	}
-	.footer-links a:hover { color: var(--text-1); }
 </style>

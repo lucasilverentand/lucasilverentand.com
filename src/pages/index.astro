@@ -2,6 +2,9 @@
 import { getCollection } from "astro:content";
 import { Icon } from "astro-icon/components";
 import Layout from "../layouts/Layout.astro";
+import Nav from "../components/Nav.astro";
+import Footer from "../components/Footer.astro";
+import DitheredPortrait from "../components/DitheredPortrait.astro";
 
 const recentPosts = (await getCollection("blog", ({ data }) => !data.draft))
 	.sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
@@ -119,12 +122,13 @@ const langColor: Record<string, string> = {
 ---
 
 <Layout>
+	<Nav />
 	<main>
 		<section class="hero">
 			<div class="wrap hero-entrance">
 				<div class="hero-row">
 					<div class="portrait">
-						<img src="/portrait.svg" alt="Line drawing portrait of Luca" width="240" height="240" />
+						<DitheredPortrait size={260} />
 					</div>
 					<div class="hero-text">
 						<h1>Luca Silverentand</h1>
@@ -258,15 +262,7 @@ const langColor: Record<string, string> = {
 		</section>
 	</main>
 
-	<footer>
-		<div class="wrap">
-			<span>Luca Silverentand &copy; 2025</span>
-			<div class="footer-links">
-				<a href="https://github.com/lucasilverentand" target="_blank" rel="noopener">GitHub</a>
-				<a href="https://github.com/seventwo-studio" target="_blank" rel="noopener">SevenTwo Studio</a>
-			</div>
-		</div>
-	</footer>
+	<Footer />
 </Layout>
 
 <style>
@@ -289,12 +285,6 @@ const langColor: Record<string, string> = {
 	}
 	.portrait {
 		flex-shrink: 0;
-		-webkit-mask-image: radial-gradient(ellipse 70% 65% at 50% 40%, black 40%, transparent 100%);
-		mask-image: radial-gradient(ellipse 70% 65% at 50% 40%, black 40%, transparent 100%);
-	}
-	.portrait img {
-		width: 240px;
-		height: 240px;
 	}
 	.hero-text {
 		min-width: 0;
@@ -561,33 +551,6 @@ const langColor: Record<string, string> = {
 		flex-shrink: 0;
 	}
 
-	/* ── Footer ── */
-	footer {
-		border-top: 1px solid var(--border);
-		padding: 28px 0;
-	}
-	footer .wrap {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-	}
-	footer span {
-		font-family: var(--font-mono);
-		font-size: 12px;
-		color: var(--text-3);
-	}
-	.footer-links {
-		display: flex;
-		gap: 20px;
-	}
-	.footer-links a {
-		font-family: var(--font-mono);
-		font-size: 12px;
-		color: var(--text-3);
-		transition: color 0.15s;
-	}
-	.footer-links a:hover { color: var(--text-1); }
-
 	/* ── Animations ── */
 	@keyframes hero-in {
 		from {
@@ -638,15 +601,14 @@ const langColor: Record<string, string> = {
 			align-items: flex-start;
 			gap: 32px;
 		}
-		.portrait img { width: 200px; height: 200px; }
+		.portrait :global(.dithered-portrait) { width: 200px !important; height: 200px !important; }
 		.featured-card { padding: 28px 24px; }
 		.grid { grid-template-columns: repeat(2, 1fr); }
 		.post-desc { display: none; }
 	}
 	@media (max-width: 520px) {
 		.grid { grid-template-columns: 1fr; }
-		footer .wrap { flex-direction: column; gap: 12px; align-items: flex-start; }
-	}
+}
 </style>
 
 <script>

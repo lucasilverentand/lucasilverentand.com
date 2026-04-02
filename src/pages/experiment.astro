@@ -1,0 +1,549 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Nav from "../components/Nav.astro";
+import Footer from "../components/Footer.astro";
+---
+
+<Layout title="Dithered Depth — Luca Silverentand" description="Interactive dithered portrait with AI depth estimation.">
+	<Nav />
+
+	<main class="experiment">
+		<div class="canvas-wrap">
+			<canvas id="c"></canvas>
+			<div id="overlay">
+				<div id="loader">
+					<p id="status">Drop a photo to begin</p>
+					<div class="bar" id="bar" hidden><div id="fill"></div></div>
+				</div>
+				<label id="drop-zone">
+					<input type="file" accept="image/*" id="file" />
+					<span class="drop-label">Drop photo here or click to select</span>
+				</label>
+			</div>
+		</div>
+		<div class="info">
+			<h1>Dithered Depth</h1>
+			<p>
+				Bayer-matrix ordered dithering with AI depth estimation driving per-layer parallax.
+				Move your mouse across the portrait.
+			</p>
+		</div>
+	</main>
+
+	<Footer />
+</Layout>
+
+<style>
+	.experiment {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		padding: 48px 24px 80px;
+		min-height: calc(100vh - 52px - 85px);
+	}
+	.canvas-wrap {
+		position: relative;
+		width: min(640px, 88vw);
+		aspect-ratio: 1;
+		border-radius: 14px;
+		overflow: hidden;
+		background: var(--bg);
+		border: 1px solid var(--border);
+	}
+	#c {
+		width: 100%;
+		height: 100%;
+		display: block;
+		cursor: crosshair;
+	}
+	#overlay {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 20px;
+		background: var(--bg);
+		transition: opacity 0.8s ease;
+		z-index: 2;
+	}
+	#overlay.done {
+		opacity: 0;
+		pointer-events: none;
+	}
+	#status {
+		font-family: var(--font-mono);
+		font-size: 13px;
+		color: var(--text-2);
+		text-align: center;
+	}
+	.bar {
+		width: 220px;
+		height: 2px;
+		background: var(--border);
+		border-radius: 1px;
+		overflow: hidden;
+	}
+	#fill {
+		height: 100%;
+		width: 0%;
+		background: var(--accent);
+		transition: width 0.3s ease;
+	}
+	#drop-zone {
+		cursor: pointer;
+	}
+	.drop-label {
+		display: block;
+		font-family: var(--font-mono);
+		font-size: 13px;
+		color: var(--text-3);
+		border: 1px dashed var(--border-2);
+		padding: 14px 28px;
+		border-radius: 8px;
+		transition: border-color 0.15s, color 0.15s;
+	}
+	.drop-label:hover {
+		border-color: var(--text-3);
+		color: var(--text-2);
+	}
+	#file {
+		display: none;
+	}
+	.info {
+		text-align: center;
+		margin-top: 28px;
+		max-width: 460px;
+	}
+	.info h1 {
+		font-family: var(--font-display);
+		font-size: 32px;
+		font-weight: 400;
+		margin-bottom: 8px;
+	}
+	.info p {
+		font-size: 14px;
+		line-height: 1.6;
+		color: var(--text-3);
+	}
+
+	/* Drag-over state */
+	.canvas-wrap.dragover #overlay {
+		background: var(--bg-2);
+	}
+	.canvas-wrap.dragover .drop-label {
+		border-color: var(--accent);
+		color: var(--text-1);
+	}
+</style>
+
+<script type="module">
+	// ── Config ──
+	const SPACING = 3;
+	const DOT = 2;
+	const LAYERS = 14;
+	const MAX_SHIFT = 28;
+	const IDLE_AMP = 1.8;
+	const LERP = 0.06;
+	const GAMMA = 0.82;
+	const POND_RADIUS = 70;
+	const POND_STRENGTH = 35;
+	const POND_SPRING = 0.1;
+	const POND_DECAY = 0.88;
+
+	// Bayer 8×8 ordered dithering matrix (normalized 0–1)
+	const BAYER = [
+		[0, 32, 8, 40, 2, 34, 10, 42],
+		[48, 16, 56, 24, 50, 18, 58, 26],
+		[12, 44, 4, 36, 14, 46, 6, 38],
+		[60, 28, 52, 20, 62, 30, 54, 22],
+		[3, 35, 11, 43, 1, 33, 9, 41],
+		[51, 19, 59, 27, 49, 17, 57, 25],
+		[15, 47, 7, 39, 13, 45, 5, 37],
+		[63, 31, 55, 23, 61, 29, 53, 21],
+	].map((r) => r.map((v) => v / 64));
+
+	// ── DOM ──
+	const canvas = document.getElementById("c");
+	const ctx = canvas.getContext("2d");
+	const overlay = document.getElementById("overlay");
+	const statusEl = document.getElementById("status");
+	const bar = document.getElementById("bar");
+	const fill = document.getElementById("fill");
+	const dropZone = document.getElementById("drop-zone");
+	const fileInput = document.getElementById("file");
+	const wrap = canvas.parentElement;
+
+	// ── State ──
+	let allDots = [];
+	let dotSize = 2;
+	let mx = 0.5,
+		my = 0.5,
+		cx = 0.5,
+		cy = 0.5;
+	// Raw cursor in canvas-pixel coords for pond effect (-9999 when off canvas)
+	let cursorPx = -9999,
+		cursorPy = -9999;
+	let hovering = false;
+	let t = 0,
+		startMs = 0,
+		active = false;
+
+	// ── Helpers ──
+	const setStatus = (s) => (statusEl.textContent = s);
+	const setProgress = (p) => (fill.style.width = `${p}%`);
+
+	function loadImg(src) {
+		return new Promise((res, rej) => {
+			const img = new Image();
+			img.crossOrigin = "anonymous";
+			img.onload = () => res(img);
+			img.onerror = rej;
+			img.src = src;
+		});
+	}
+
+	function samplePixels(img, size) {
+		const c = document.createElement("canvas");
+		c.width = size;
+		c.height = size;
+		const x = c.getContext("2d");
+		const scale = Math.max(size / img.width, size / img.height);
+		const w = img.width * scale,
+			h = img.height * scale;
+		const dx = (size - w) / 2,
+			dy = (size - h) / 2;
+		x.drawImage(img, dx, dy, w, h);
+		return x.getImageData(0, 0, size, size).data;
+	}
+
+	// ── Depth estimation ──
+	async function estimateDepth(img, size) {
+		setStatus("Loading AI depth model…");
+		bar.hidden = false;
+		setProgress(8);
+
+		let depthBuf;
+
+		try {
+			const { pipeline, env } = await import(
+				"https://cdn.jsdelivr.net/npm/@huggingface/transformers@3"
+			);
+			env.allowLocalModels = false;
+
+			let last = 8;
+			const pipe = await pipeline(
+				"depth-estimation",
+				"onnx-community/depth-anything-v2-small",
+				{
+					progress_callback: (p) => {
+						if (p.status === "progress" && p.progress != null) {
+							const pct = 8 + p.progress * 0.6;
+							if (pct > last) {
+								last = pct;
+								setProgress(pct);
+							}
+						}
+					},
+				},
+			);
+
+			setStatus("Estimating depth…");
+			setProgress(72);
+
+			const tc = document.createElement("canvas");
+			tc.width = img.naturalWidth;
+			tc.height = img.naturalHeight;
+			tc.getContext("2d").drawImage(img, 0, 0);
+			const dataUrl = tc.toDataURL("image/jpeg", 0.85);
+
+			const { depth } = await pipe(dataUrl);
+			setProgress(88);
+
+			const ch = depth.channels || 1;
+			depthBuf = new Float32Array(size * size);
+			for (let y = 0; y < size; y++) {
+				for (let x = 0; x < size; x++) {
+					const sx = Math.floor((x / size) * depth.width);
+					const sy = Math.floor((y / size) * depth.height);
+					depthBuf[y * size + x] =
+						depth.data[(sy * depth.width + sx) * ch] / 255;
+				}
+			}
+
+			// Auto-detect orientation: center of selfie should be near
+			const mid =
+				depthBuf[Math.floor(size * 0.5) * size + Math.floor(size * 0.5)];
+			if (mid < 0.4) {
+				for (let i = 0; i < depthBuf.length; i++)
+					depthBuf[i] = 1 - depthBuf[i];
+			}
+		} catch (err) {
+			console.warn("Depth AI failed, using luminance fallback:", err);
+			setStatus("Depth model unavailable — using fallback…");
+
+			const px = samplePixels(img, size);
+			depthBuf = new Float32Array(size * size);
+			for (let y = 0; y < size; y++) {
+				for (let x = 0; x < size; x++) {
+					const i = (y * size + x) * 4;
+					const lum =
+						(0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2]) /
+						255;
+					const cx2 = x / size - 0.5,
+						cy2 = y / size - 0.5;
+					const dist = Math.sqrt(cx2 * cx2 + cy2 * cy2);
+					depthBuf[y * size + x] = Math.min(
+						1,
+						Math.max(0, lum * 0.4 + (1 - dist * 1.4) * 0.6),
+					);
+				}
+			}
+		}
+
+		return depthBuf;
+	}
+
+	// ── Build dithered dots ──
+	function buildDots(img, depthBuf, size, dpr) {
+		const px = samplePixels(img, size);
+		const spacing = Math.round(SPACING * dpr);
+		dotSize = Math.round(DOT * dpr);
+		const dots = [];
+
+		for (let y = 0; y < size; y += spacing) {
+			for (let x = 0; x < size; x += spacing) {
+				const i = (y * size + x) * 4;
+				if (px[i + 3] < 128) continue;
+
+				const lum =
+					(0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2]) /
+					255;
+				const brightness = Math.pow(lum, GAMMA);
+				const d = depthBuf[y * size + x];
+
+				const bx = Math.floor(x / spacing) % 8;
+				const by = Math.floor(y / spacing) % 8;
+				const threshold = BAYER[by][bx] - d * 0.07;
+
+				if (brightness <= threshold) continue;
+
+				// Full color from source image
+				const r = px[i];
+				const g = px[i + 1];
+				const b = px[i + 2];
+				const alpha = 0.55 + brightness * 0.45;
+
+				const layer = Math.min(LAYERS - 1, Math.floor(d * LAYERS));
+				dots.push({
+					x,
+					y,
+					depth: d,
+					layer,
+					color: `rgba(${r},${g},${b},${alpha})`,
+					// Pond displacement (smoothed per frame)
+					ox: 0,
+					oy: 0,
+				});
+			}
+		}
+
+		// Sort by layer so far dots render first (painter's order)
+		dots.sort((a, b) => a.layer - b.layer);
+		return dots;
+	}
+
+	// ── Render loop ──
+	function render() {
+		if (!active) return;
+
+		const w = canvas.width,
+			h = canvas.height;
+		const dpr = Math.min(window.devicePixelRatio || 1, 2);
+		const shift = MAX_SHIFT * dpr;
+		const idle = IDLE_AMP * dpr;
+		const pondR = POND_RADIUS * dpr;
+		const pondS = POND_STRENGTH * dpr;
+
+		// Lerp parallax cursor
+		cx += (mx - cx) * LERP;
+		cy += (my - cy) * LERP;
+
+		const pdx = (cx - 0.5) * 2;
+		const pdy = (cy - 0.5) * 2;
+		t += 0.006;
+
+		// Entrance fade
+		const age = (performance.now() - startMs) / 1000;
+		const fadeIn = Math.min(1, age / 1.2);
+
+		ctx.clearRect(0, 0, w, h);
+		ctx.globalAlpha = fadeIn;
+
+		let prevColor = "";
+
+		for (let i = 0; i < allDots.length; i++) {
+			const dot = allDots[i];
+			const d = dot.layer / (LAYERS - 1);
+
+			// Parallax offset
+			const plx = pdx * shift * d + Math.sin(t * 0.8 + d * 5) * idle * d;
+			const ply = pdy * shift * d + Math.cos(t * 0.5 + d * 3.7) * idle * d;
+
+			// Pond repulsion
+			const dotWorldX = dot.x + plx;
+			const dotWorldY = dot.y + ply;
+			const ddx = dotWorldX - cursorPx;
+			const ddy = dotWorldY - cursorPy;
+
+			// Quick bounding-box check before sqrt
+			if (
+				hovering &&
+				Math.abs(ddx) < pondR &&
+				Math.abs(ddy) < pondR
+			) {
+				const dist = Math.sqrt(ddx * ddx + ddy * ddy);
+				if (dist < pondR && dist > 0.1) {
+					const force =
+						((1 - dist / pondR) ** 2) * pondS * (0.6 + dot.depth * 0.4);
+					const tx = (ddx / dist) * force;
+					const ty = (ddy / dist) * force;
+					dot.ox += (tx - dot.ox) * POND_SPRING;
+					dot.oy += (ty - dot.oy) * POND_SPRING;
+				} else {
+					dot.ox *= POND_DECAY;
+					dot.oy *= POND_DECAY;
+				}
+			} else {
+				dot.ox *= POND_DECAY;
+				dot.oy *= POND_DECAY;
+			}
+
+			// Final position
+			const fx = dot.x + plx + dot.ox;
+			const fy = dot.y + ply + dot.oy;
+
+			// Batch fillStyle changes
+			if (dot.color !== prevColor) {
+				ctx.fillStyle = dot.color;
+				prevColor = dot.color;
+			}
+			ctx.fillRect(fx, fy, dotSize, dotSize);
+		}
+
+		ctx.globalAlpha = 1;
+		requestAnimationFrame(render);
+	}
+
+	// ── Process image ──
+	async function process(img) {
+		dropZone.hidden = true;
+		bar.hidden = false;
+		setStatus("Preparing…");
+		setProgress(4);
+
+		const cssSize = wrap.clientWidth;
+		const dpr = Math.min(window.devicePixelRatio || 1, 2);
+		const size = Math.round(cssSize * dpr);
+		canvas.width = size;
+		canvas.height = size;
+
+		const depthBuf = await estimateDepth(img, size);
+
+		setStatus("Rendering…");
+		setProgress(92);
+
+		allDots = buildDots(img, depthBuf, size, dpr);
+
+		setProgress(100);
+		setStatus("Done");
+
+		await new Promise((r) => setTimeout(r, 300));
+		overlay.classList.add("done");
+
+		active = true;
+		startMs = performance.now();
+		requestAnimationFrame(render);
+
+		// Mouse — track both normalized (parallax) and pixel coords (pond)
+		canvas.addEventListener("mousemove", (e) => {
+			const r = canvas.getBoundingClientRect();
+			const dpr = Math.min(window.devicePixelRatio || 1, 2);
+			mx = (e.clientX - r.left) / r.width;
+			my = (e.clientY - r.top) / r.height;
+			cursorPx = (e.clientX - r.left) / r.width * canvas.width;
+			cursorPy = (e.clientY - r.top) / r.height * canvas.height;
+			hovering = true;
+		});
+		canvas.addEventListener("mouseleave", () => {
+			mx = 0.5;
+			my = 0.5;
+			hovering = false;
+		});
+
+		// Touch
+		canvas.addEventListener(
+			"touchmove",
+			(e) => {
+				e.preventDefault();
+				const r = canvas.getBoundingClientRect();
+				const tx = e.touches[0].clientX - r.left;
+				const ty = e.touches[0].clientY - r.top;
+				mx = tx / r.width;
+				my = ty / r.height;
+				cursorPx = (tx / r.width) * canvas.width;
+				cursorPy = (ty / r.height) * canvas.height;
+				hovering = true;
+			},
+			{ passive: false },
+		);
+		canvas.addEventListener("touchend", () => {
+			mx = 0.5;
+			my = 0.5;
+			hovering = false;
+		});
+
+		// Gyroscope (no pond effect, just parallax)
+		if (window.DeviceOrientationEvent) {
+			window.addEventListener("deviceorientation", (e) => {
+				if (e.gamma != null) {
+					mx = 0.5 + Math.max(-1, Math.min(1, e.gamma / 30)) * 0.4;
+					my =
+						0.5 +
+						Math.max(-1, Math.min(1, (e.beta - 50) / 30)) * 0.4;
+				}
+			});
+		}
+	}
+
+	// ── File handling ──
+	function handleFile(file) {
+		if (!file || !file.type.startsWith("image/")) return;
+		const url = URL.createObjectURL(file);
+		loadImg(url).then(process);
+	}
+
+	fileInput.addEventListener("change", (e) => {
+		handleFile(e.target.files?.[0]);
+	});
+
+	// Drag & drop
+	wrap.addEventListener("dragover", (e) => {
+		e.preventDefault();
+		wrap.classList.add("dragover");
+	});
+	wrap.addEventListener("dragleave", () => wrap.classList.remove("dragover"));
+	wrap.addEventListener("drop", (e) => {
+		e.preventDefault();
+		wrap.classList.remove("dragover");
+		handleFile(e.dataTransfer.files?.[0]);
+	});
+
+	// Try auto-loading /me.jpg
+	loadImg("/me.jpg")
+		.then(process)
+		.catch(() => {
+			/* show drop zone (already visible) */
+		});
+</script>

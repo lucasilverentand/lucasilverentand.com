@@ -27,8 +27,8 @@ const total = size + pad * 2;
 <script type="module">
 	const SPACING = 1.5;
 	const DOT = 1.2;
-	const GAMMA = 0.55;
-	const SAT_BOOST = 1.15;
+	const GAMMA = 0.45;
+	const SAT_BOOST = 1.25;
 	const BRIGHTNESS_LIFT = 1.2;
 	const SWIRL_AMP = 3.5;
 	const SWIRL_SPEED = 0.25;
@@ -153,7 +153,7 @@ const total = size + pad * 2;
 				if (brightness <= threshold) continue;
 
 				const [r, g, b] = boostColor(px[i], px[i + 1], px[i + 2]);
-				const alpha = 0.4 + brightness * 0.6;
+				const alpha = 0.55 + brightness * 0.45;
 				// Distance from center: 0 at middle, 1 at corner
 				const dx = (x - imgSize / 2) / (imgSize / 2);
 				const dy = (y - imgSize / 2) / (imgSize / 2);
@@ -296,6 +296,10 @@ const total = size + pad * 2;
 		canvas.addEventListener("mouseleave", () => {
 			hovering = false;
 		});
+		function haptic() {
+			if (navigator.vibrate) navigator.vibrate(8);
+		}
+
 		canvas.addEventListener("click", (e) => {
 			const r = canvas.getBoundingClientRect();
 			ripples.push({
@@ -303,7 +307,19 @@ const total = size + pad * 2;
 				y: ((e.clientY - r.top) / r.height) * canvas.height,
 				t: performance.now(),
 			});
+			haptic();
 		});
+
+		canvas.addEventListener("touchstart", (e) => {
+			const r = canvas.getBoundingClientRect();
+			cursorPx = ((e.touches[0].clientX - r.left) / r.width) * canvas.width;
+			cursorPy = ((e.touches[0].clientY - r.top) / r.height) * canvas.height;
+			hovering = true;
+			// Ripple on tap
+			ripples.push({ x: cursorPx, y: cursorPy, t: performance.now() });
+			haptic();
+		}, { passive: true });
+
 		canvas.addEventListener(
 			"touchmove",
 			(e) => {

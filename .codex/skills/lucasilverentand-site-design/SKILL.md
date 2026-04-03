@@ -14,8 +14,9 @@ Design additions to feel native to this website, not like a generic template. Tr
 1. Inspect the target page or component and then inspect the shared tokens in `src/layouts/Layout.astro`.
 2. Read `references/design-system.md` before making visual decisions.
 3. Reuse the existing typography, spacing, card, divider, and hover patterns unless the user explicitly asks for a new direction.
-4. Keep implementation local and simple: prefer Astro components plus page-level `<style>` blocks over introducing a styling framework or a large abstraction layer.
-5. If a change introduces a reusable visual pattern, add it in the same style family and update `references/design-system.md`.
+4. For visual work, capture the rendered result with `npm run design:screenshot -- <route> <output-path>` and inspect the image before deciding whether the styling is correct.
+5. Keep implementation local and simple: prefer Astro components plus page-level `<style>` blocks over introducing a styling framework or a large abstraction layer.
+6. If a change introduces a reusable visual pattern, add it in the same style family and update `references/design-system.md`.
 
 ## Implementation Rules
 
@@ -35,6 +36,7 @@ Design additions to feel native to this website, not like a generic template. Tr
 ## Validation
 
 - Compare the new work against nearby pages for rhythm, contrast, and type hierarchy.
+- Use a fresh screenshot for visual comparison instead of judging color, spacing, or prominence from code alone.
 - Check mobile collapse against the site's existing breakpoints before finishing.
 - Avoid adding extra accent colors or decorative effects that compete with the orange accent or the dithered portrait treatment.
 - Run the relevant preview or build step when a task changes layout, client-side behavior, or generated page structure.

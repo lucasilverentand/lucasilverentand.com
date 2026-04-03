@@ -5,6 +5,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
+    "design:screenshot": "node scripts/capture-page.mjs",
     "deploy": "astro build && wrangler deploy"
   },
   "dependencies": {
@@ -15,6 +16,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
+    "playwright": "^1.59.1",
     "wrangler": "^3.109.3"
   }
 }

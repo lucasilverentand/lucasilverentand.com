@@ -4,13 +4,21 @@ import { Icon } from "astro-icon/components";
 import Layout from "../layouts/Layout.astro";
 import Footer from "../components/Footer.astro";
 import DitheredPortrait from "../components/DitheredPortrait.astro";
+import { getExternalArticles, toWritingEntry } from "../lib/writing";
 
-const recentPosts = (await getCollection("blog", ({ data }) => !data.draft))
-	.sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
+const recentPosts = [
+	...(await getCollection("blog", ({ data }) => !data.draft)).map(toWritingEntry),
+	...getExternalArticles(),
+]
+	.sort((a, b) => b.date.getTime() - a.date.getTime())
 	.slice(0, 3);
 
 function formatDate(date: Date) {
 	return date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+}
+
+function postHref(post: (typeof recentPosts)[number]) {
+	return post.externalUrl ?? `/blog/${post.id}`;
 }
 
 const ai = [
@@ -184,12 +192,19 @@ const langColor: Record<string, string> = {
 						<a href="/blog" class="see-all">View all &rarr;</a>
 					</div>
 					{recentPosts.map((post) => (
-						<a href={`/blog/${post.id}`} class="post-row fade-in">
+						<a
+							href={postHref(post)}
+							class="post-row fade-in"
+							target={post.externalUrl ? "_blank" : undefined}
+							rel={post.externalUrl ? "noopener noreferrer" : undefined}
+						>
 							<div class="post-info">
-								<span class="post-title">{post.data.title}</span>
-								<span class="post-desc">{post.data.description}</span>
+								<span class="post-title">{post.title}</span>
+								<span class="post-desc">
+									{post.source ? `${post.source} · ${post.description}` : post.description}
+								</span>
 							</div>
-							<time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
+							<time datetime={post.date.toISOString()}>{formatDate(post.date)}</time>
 						</a>
 					))}
 				</div>

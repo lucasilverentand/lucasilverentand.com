@@ -1,0 +1,62 @@
+---
+interface Props {
+	source: string;
+}
+
+const { source } = Astro.props;
+
+const normalizedSource = source.trim().toLowerCase();
+
+const sourceConfig = {
+	medium: {
+		label: "Medium",
+	},
+	substack: {
+		label: "Substack",
+	},
+}[normalizedSource] ?? {
+	label: source,
+};
+---
+
+<span class="source-badge" data-source={normalizedSource} aria-label={sourceConfig.label} title={sourceConfig.label}>
+	{normalizedSource === "medium" ? (
+		<img src="/medium-wordmark-white.svg" alt="" width="70" height="14" aria-hidden="true" />
+	) : normalizedSource === "substack" ? (
+		<img src="/substack-wordmark-white.svg" alt="" width="72" height="12" aria-hidden="true" />
+	) : (
+		<span class="source-dot" aria-hidden="true"></span>
+	)}
+</span>
+
+<style>
+	.source-badge {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		color: var(--text-3);
+		line-height: 1;
+		flex: 0 0 auto;
+		height: 14px;
+		vertical-align: middle;
+		opacity: 1;
+	}
+
+	.source-badge svg {
+		display: block;
+	}
+
+	.source-badge img {
+		display: block;
+		height: 100%;
+		width: auto;
+	}
+
+	.source-dot {
+		width: 7px;
+		height: 7px;
+		border-radius: 999px;
+		background: var(--text-1);
+		flex: 0 0 auto;
+	}
+</style>

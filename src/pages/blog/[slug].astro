@@ -2,9 +2,10 @@
 import { getCollection, render } from "astro:content";
 import Layout from "../../layouts/Layout.astro";
 import Footer from "../../components/Footer.astro";
+import SourceBadge from "../../components/SourceBadge.astro";
 
 export async function getStaticPaths() {
-	const posts = await getCollection("blog", ({ data }) => !data.draft);
+	const posts = await getCollection("blog", ({ data }) => !data.draft && !data.imported);
 	return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
 }
 
@@ -17,27 +18,49 @@ function formatDate(date: Date) {
 
 const words = post.body?.split(/\s+/).length ?? 0;
 const readingTime = Math.max(1, Math.round(words / 230));
+const visibleTags = post.data.tags.filter(
+	(tag) => tag.trim().toLowerCase() !== post.data.source?.trim().toLowerCase(),
+);
 ---
 
 <Layout title={`${post.data.title} — Luca Silverentand`} description={post.data.description}>
 	<main>
 		<article>
 			<div class="wrap">
-				<a href="/blog" class="back">&larr; Back to blog</a>
+				<a href="/blog" class="back">&larr; Back to my writing</a>
 
 				<header>
 					<div class="meta">
+						{post.data.source && (
+							<>
+								<SourceBadge source={post.data.source} />
+								<span class="separator">&middot;</span>
+							</>
+						)}
 						<time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
 						<span class="separator">&middot;</span>
-						<span class="reading-time">{readingTime} min read</span>
-						<div class="tags">
-							{post.data.tags.map((tag) => (
-								<span class="tag">{tag}</span>
-							))}
-						</div>
+						{post.data.imported ? (
+							<span class="reading-time">Imported article</span>
+						) : (
+							<span class="reading-time">{readingTime} min read</span>
+						)}
 					</div>
 					<h1>{post.data.title}</h1>
 					<p class="description">{post.data.description}</p>
+					{visibleTags.length > 0 && (
+						<div class="tags">
+							{visibleTags.map((tag) => (
+								<span class="tag">{tag}</span>
+							))}
+						</div>
+					)}
+					{post.data.externalUrl && (
+						<p class="external-link">
+							<a href={post.data.externalUrl} target="_blank" rel="noopener noreferrer">
+								Read the full article &rarr;
+							</a>
+						</p>
+					)}
 				</header>
 
 				<div class="prose">
@@ -76,8 +99,11 @@ const readingTime = Math.max(1, Math.round(words / 230));
 	.meta {
 		display: flex;
 		align-items: center;
-		gap: 12px;
-		margin-bottom: 20px;
+		flex-wrap: wrap;
+		row-gap: 8px;
+		column-gap: 0;
+		margin-bottom: 18px;
+		min-height: 14px;
 	}
 	.meta time,
 	.separator,
@@ -85,18 +111,30 @@ const readingTime = Math.max(1, Math.round(words / 230));
 		font-family: var(--font-mono);
 		font-size: 13px;
 		color: var(--text-3);
+		line-height: 1;
+		display: inline-flex;
+		align-items: center;
+	}
+	.separator {
+		justify-content: center;
+		margin: 0 12px;
 	}
 	.tags {
 		display: flex;
-		gap: 6px;
+		flex-wrap: wrap;
+		gap: 8px;
+		margin-top: 18px;
 	}
 	.tag {
 		font-family: var(--font-mono);
 		font-size: 11px;
-		color: var(--accent);
-		background: var(--accent-dim);
-		padding: 2px 8px;
-		border-radius: 4px;
+		color: var(--text-2);
+		background: var(--bg-2);
+		border: 1px solid var(--border);
+		padding: 5px 10px;
+		border-radius: 999px;
+		line-height: 1.2;
+		overflow-wrap: anywhere;
 	}
 	header h1 {
 		font-family: var(--font-display);
@@ -110,6 +148,20 @@ const readingTime = Math.max(1, Math.round(words / 230));
 		font-size: 17px;
 		line-height: 1.6;
 		color: var(--text-2);
+	}
+	.external-link {
+		margin-top: 18px;
+	}
+	.external-link :global(a) {
+		font-family: var(--font-mono);
+		font-size: 13px;
+		color: var(--text-1);
+		text-decoration: none;
+		border-bottom: 1px solid var(--border-2);
+		padding-bottom: 2px;
+	}
+	.external-link :global(a:hover) {
+		border-color: var(--text-2);
 	}
 
 	/* ── Prose ── */

@@ -1,0 +1,10 @@
+{
+	"sources": [
+		{
+			"name": "medium",
+			"label": "Medium",
+			"feed": "https://lucasilverentand.medium.com/feed",
+			"tags": ["medium"]
+		}
+	]
+}

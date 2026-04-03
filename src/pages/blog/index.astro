@@ -2,39 +2,68 @@
 import { getCollection } from "astro:content";
 import Layout from "../../layouts/Layout.astro";
 import Footer from "../../components/Footer.astro";
+import SourceBadge from "../../components/SourceBadge.astro";
+import { getExternalArticles, toWritingEntry } from "../../lib/writing";
 
-const posts = (await getCollection("blog", ({ data }) => !data.draft)).sort(
-	(a, b) => b.data.date.getTime() - a.data.date.getTime(),
-);
+const posts = [
+	...(await getCollection("blog", ({ data }) => !data.draft)).map(toWritingEntry),
+	...getExternalArticles(),
+].sort((a, b) => b.date.getTime() - a.date.getTime());
 
 function formatDate(date: Date) {
 	return date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
 }
+
+function visibleTags(post: (typeof posts)[number]) {
+	const sourceTag = post.source?.trim().toLowerCase();
+	return post.tags.filter((tag) => tag.trim().toLowerCase() !== sourceTag);
+}
+
+function postHref(post: (typeof posts)[number]) {
+	return post.externalUrl ?? `/blog/${post.id}`;
+}
 ---
 
-<Layout title="Blog — Luca Silverentand" description="Writing about Rust, Swift, AI tooling, and building things.">
+<Layout
+	title="My Writing — Luca Silverentand"
+	description="All of my writing in one place: all my articles, newsletter, and other published writing."
+>
 	<main>
 		<section class="blog-hero">
 			<div class="wrap">
-				<h1>Blog</h1>
-				<p class="subtitle">Writing about Rust, Swift, AI tooling, and building things.</p>
+				<a href="/" class="back">&larr; Back to home</a>
+				<h1>My Writing</h1>
+				<p class="subtitle">All of my writing in one place: all my articles, newsletter, and other published writing.</p>
 			</div>
 		</section>
 
 		<section class="posts">
 			<div class="wrap">
 				{posts.map((post) => (
-					<a href={`/blog/${post.id}`} class="post-card">
+					<a
+						href={postHref(post)}
+						class="post-card"
+						target={post.externalUrl ? "_blank" : undefined}
+						rel={post.externalUrl ? "noopener noreferrer" : undefined}
+					>
 						<div class="post-meta">
-							<time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
-							<div class="post-tags">
-								{post.data.tags.map((tag) => (
+							{post.source && (
+								<>
+									<SourceBadge source={post.source} />
+									<span class="separator">&middot;</span>
+								</>
+							)}
+							<time datetime={post.date.toISOString()}>{formatDate(post.date)}</time>
+						</div>
+						<h2>{post.title}</h2>
+						<p>{post.description}</p>
+						{visibleTags(post).length > 0 && (
+							<div class="post-labels">
+								{visibleTags(post).map((tag) => (
 									<span class="tag">{tag}</span>
 								))}
 							</div>
-						</div>
-						<h2>{post.data.title}</h2>
-						<p>{post.data.description}</p>
+						)}
 					</a>
 				))}
 
@@ -58,6 +87,17 @@ function formatDate(date: Date) {
 	/* ── Blog hero ── */
 	.blog-hero {
 		padding: 100px 0 60px;
+	}
+	.back {
+		display: inline-block;
+		font-family: var(--font-mono);
+		font-size: 13px;
+		color: var(--text-3);
+		margin-bottom: 32px;
+		transition: color 0.15s;
+	}
+	.back:hover {
+		color: var(--text-1);
 	}
 	.blog-hero h1 {
 		font-family: var(--font-display);
@@ -92,25 +132,42 @@ function formatDate(date: Date) {
 	.post-meta {
 		display: flex;
 		align-items: center;
-		gap: 12px;
+		flex-wrap: wrap;
+		row-gap: 8px;
+		column-gap: 0;
 		margin-bottom: 10px;
+		min-height: 14px;
 	}
-	.post-meta time {
+	.post-meta time,
+	.separator {
 		font-family: var(--font-mono);
 		font-size: 12px;
 		color: var(--text-3);
+		line-height: 1;
+		display: inline-flex;
+		align-items: center;
 	}
-	.post-tags {
+	.separator {
+		justify-content: center;
+		margin: 0 10px;
+	}
+	.post-labels {
 		display: flex;
-		gap: 6px;
+		flex-wrap: wrap;
+		gap: 8px;
+		margin-top: 16px;
+		max-width: 720px;
 	}
 	.tag {
 		font-family: var(--font-mono);
 		font-size: 11px;
-		color: var(--accent);
-		background: var(--accent-dim);
-		padding: 2px 8px;
-		border-radius: 4px;
+		color: var(--text-2);
+		background: var(--bg-2);
+		border: 1px solid var(--border);
+		padding: 5px 10px;
+		border-radius: 999px;
+		line-height: 1.2;
+		overflow-wrap: anywhere;
 	}
 	.post-card h2 {
 		font-family: var(--font-display);
@@ -124,6 +181,15 @@ function formatDate(date: Date) {
 		line-height: 1.6;
 		color: var(--text-2);
 		max-width: 640px;
+	}
+	@media (max-width: 640px) {
+		.post-labels {
+			gap: 6px;
+		}
+		.tag {
+			font-size: 10px;
+			padding: 5px 9px;
+		}
 	}
 	.empty {
 		font-size: 15px;

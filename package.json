@@ -5,6 +5,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
+    "sync:articles": "node scripts/sync-articles.mjs",
     "design:screenshot": "node scripts/capture-page.mjs",
     "deploy": "astro build && wrangler deploy"
   },

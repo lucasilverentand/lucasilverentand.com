@@ -1,0 +1,16 @@
+{
+	"sources": [
+		{
+			"name": "substack",
+			"label": "Substack",
+			"feed": "https://your-publication.substack.com/feed",
+			"tags": ["substack"]
+		},
+		{
+			"name": "medium",
+			"label": "Medium",
+			"feed": "https://medium.com/feed/@your-handle",
+			"tags": ["medium"]
+		}
+	]
+}

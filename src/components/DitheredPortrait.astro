@@ -27,9 +27,10 @@ const total = size + pad * 2;
 <script type="module">
 	const SPACING = 1.5;
 	const DOT = 1.2;
-	const GAMMA = 0.45;
-	const SAT_BOOST = 1.25;
+	const GAMMA = 0.398;
+	const SAT_BOOST = 1.02;
 	const BRIGHTNESS_LIFT = 1.2;
+	const HIGHLIGHT_MIX = 0;
 	const SWIRL_AMP = 3.5;
 	const SWIRL_SPEED = 0.25;
 	const POND_RADIUS = 80;
@@ -41,6 +42,8 @@ const total = size + pad * 2;
 	const RIPPLE_WIDTH = 45;
 	const RIPPLE_STRENGTH = 32;
 	const RIPPLE_LIFE = 3500; // ms
+	const RANDOM_RIPPLE_MIN_GAP = 3200;
+	const RANDOM_RIPPLE_MAX_GAP = 7800;
 
 	const BAYER = [
 		[0, 32, 8, 40, 2, 34, 10, 42],
@@ -68,6 +71,11 @@ const total = size + pad * 2;
 	let startMs = 0;
 	let ripples = [];
 	let t = 0;
+	let nextRandomRippleMs = 0;
+
+	function scheduleNextRandomRipple(now) {
+		return now + RANDOM_RIPPLE_MIN_GAP + Math.random() * (RANDOM_RIPPLE_MAX_GAP - RANDOM_RIPPLE_MIN_GAP);
+	}
 
 	function loadImg(src) {
 		return new Promise((res, rej) => {
@@ -149,11 +157,12 @@ const total = size + pad * 2;
 				const bx = Math.floor(x / spacing) % 8;
 				const by = Math.floor(y / spacing) % 8;
 				// Bright areas (face): almost no dithering. Dark areas (edges): heavy dithering.
-				const threshold = BAYER[by][bx] * (1 - brightness * 0.9);
+				const threshold = BAYER[by][bx] * (1 - brightness * 0.92) * 0.898;
 				if (brightness <= threshold) continue;
 
 				const [r, g, b] = boostColor(px[i], px[i + 1], px[i + 2]);
-				const alpha = 0.55 + brightness * 0.45;
+				const alpha = 0.67 + brightness * 0.22;
+				const glowAlpha = 0.065 + brightness * 0.125;
 				// Distance from center: 0 at middle, 1 at corner
 				const dx = (x - imgSize / 2) / (imgSize / 2);
 				const dy = (y - imgSize / 2) / (imgSize / 2);
@@ -166,6 +175,7 @@ const total = size + pad * 2;
 					x: x + padPx,
 					y: y + padPx,
 					color: `rgba(${r},${g},${b},${alpha})`,
+					glowColor: `rgba(${r},${g},${b},${glowAlpha})`,
 					swirlScale,
 					ox: 0,
 					oy: 0,
@@ -194,12 +204,46 @@ const total = size + pad * 2;
 		t += SWIRL_SPEED * 0.016; // ~60fps normalized
 		const swirlA = SWIRL_AMP * dpr;
 
+		if (now >= nextRandomRippleMs) {
+			ripples.push({
+				x: padPx + Math.random() * (w - padPx * 2),
+				y: padPx + Math.random() * (h - padPx * 2),
+				t: now,
+			});
+			nextRandomRippleMs = scheduleNextRandomRipple(now);
+		}
+
 		// Prune dead ripples
 		ripples = ripples.filter((r) => now - r.t < RIPPLE_LIFE);
 
 		ctx.clearRect(0, 0, w, h);
 		ctx.globalAlpha = fadeIn;
 
+		const glowPad = Math.max(1, Math.round(dpr));
+		ctx.globalCompositeOperation = "screen";
+
+		let prevGlow = "";
+		for (let i = 0; i < allDots.length; i++) {
+			const dot = allDots[i];
+			const p = dot.phase;
+			const nx = dot.x * 0.006;
+			const ny = dot.y * 0.006;
+			const angle = Math.sin(nx * 2.3 + t + p) * Math.cos(ny * 1.9 - t * 0.6 + p * 0.7) * Math.PI * 2;
+			const swirlMag = swirlA * dot.swirlScale * (0.4 + 0.6 * Math.sin(nx * 1.1 + ny * 1.5 + t * 0.3 + p));
+			const sx = Math.cos(angle) * swirlMag;
+			const sy = Math.sin(angle) * swirlMag;
+			const fx = dot.x + dot.ox + sx;
+			const fy = dot.y + dot.oy + sy;
+
+			if (dot.glowColor !== prevGlow) {
+				ctx.fillStyle = dot.glowColor;
+				prevGlow = dot.glowColor;
+			}
+			ctx.fillRect(fx - glowPad, fy - glowPad, dotSize + glowPad * 2, dotSize + glowPad * 2);
+		}
+
+		ctx.globalCompositeOperation = "source-over";
+		ctx.globalAlpha = fadeIn;
 		let prevColor = "";
 
 		for (let i = 0; i < allDots.length; i++) {
@@ -285,6 +329,7 @@ const total = size + pad * 2;
 
 		active = true;
 		startMs = performance.now();
+		nextRandomRippleMs = scheduleNextRandomRipple(startMs);
 		requestAnimationFrame(render);
 
 		canvas.addEventListener("mousemove", (e) => {

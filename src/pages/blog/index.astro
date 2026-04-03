@@ -1,7 +1,6 @@
 ---
 import { getCollection } from "astro:content";
 import Layout from "../../layouts/Layout.astro";
-import Nav from "../../components/Nav.astro";
 import Footer from "../../components/Footer.astro";
 
 const posts = (await getCollection("blog", ({ data }) => !data.draft)).sort(
@@ -14,8 +13,6 @@ function formatDate(date: Date) {
 ---
 
 <Layout title="Blog — Luca Silverentand" description="Writing about Rust, Swift, AI tooling, and building things.">
-	<Nav active="blog" />
-
 	<main>
 		<section class="blog-hero">
 			<div class="wrap">

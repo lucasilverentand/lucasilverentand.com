@@ -1,7 +1,6 @@
 ---
 import { getCollection, render } from "astro:content";
 import Layout from "../../layouts/Layout.astro";
-import Nav from "../../components/Nav.astro";
 import Footer from "../../components/Footer.astro";
 
 export async function getStaticPaths() {
@@ -21,8 +20,6 @@ const readingTime = Math.max(1, Math.round(words / 230));
 ---
 
 <Layout title={`${post.data.title} — Luca Silverentand`} description={post.data.description}>
-	<Nav active="blog" />
-
 	<main>
 		<article>
 			<div class="wrap">

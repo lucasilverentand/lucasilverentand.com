@@ -2,14 +2,13 @@ name = "lucasilverentand-com"
 account_id = "029d254cac84938ccede0b57a8711f31"
 compatibility_date = "2025-03-30"
 
-# Uncomment after adding lucasilverentand.com as a zone in Cloudflare:
-# [[routes]]
-# pattern = "lucasilverentand.com"
-# custom_domain = true
-#
-# [[routes]]
-# pattern = "www.lucasilverentand.com"
-# custom_domain = true
+[[routes]]
+pattern = "lucasilverentand.com"
+custom_domain = true
+
+[[routes]]
+pattern = "www.lucasilverentand.com"
+custom_domain = true
 
 [assets]
 directory = "./dist"

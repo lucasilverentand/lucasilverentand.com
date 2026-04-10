@@ -66,8 +66,8 @@ function postHref(post: (typeof recentPosts)[number]) {
 					<div class="absolute inset-0 grid grid-cols-4 max-md:grid-cols-3 opacity-40 group-hover:opacity-50 transition-opacity duration-500">
 						<img src="https://raw.githubusercontent.com/lucasilverentand/artemis-lunar-wallpapers/main/thumbnails/moon-upper-hemisphere.jpg" alt="" class="w-full h-full object-cover" loading="lazy" />
 						<img src="https://raw.githubusercontent.com/lucasilverentand/artemis-lunar-wallpapers/main/thumbnails/total-solar-eclipse-corona.jpg" alt="" class="w-full h-full object-cover" loading="lazy" />
-						<img src="https://raw.githubusercontent.com/lucasilverentand/artemis-lunar-wallpapers/main/thumbnails/crescent-moon-from-orion.jpg" alt="" class="w-full h-full object-cover" loading="lazy" />
-						<img src="https://raw.githubusercontent.com/lucasilverentand/artemis-lunar-wallpapers/main/thumbnails/moon-with-earth-background.jpg" alt="" class="w-full h-full object-cover max-md:hidden" loading="lazy" />
+						<img src="https://raw.githubusercontent.com/lucasilverentand/artemis-lunar-wallpapers/main/thumbnails/earthrise-over-moon-limb.jpg" alt="" class="w-full h-full object-cover" loading="lazy" />
+						<img src="https://raw.githubusercontent.com/lucasilverentand/artemis-lunar-wallpapers/main/thumbnails/moon-crescent-distant.jpg" alt="" class="w-full h-full object-cover max-md:hidden" loading="lazy" />
 					</div>
 					<div class="absolute inset-0 bg-gradient-to-r from-[#0a0a12] via-[#0a0a12]/90 to-[#0a0a12]/60"></div>
 					<!-- Content -->
@@ -157,7 +157,7 @@ function postHref(post: (typeof recentPosts)[number]) {
 					<h2 class="font-display text-[32px] font-normal">Projects</h2>
 					<span id="projects-count" class="font-mono text-[13px] text-text-3"></span>
 				</div>
-				<div id="filter-bar" class="flex flex-col gap-2.5 mb-7 pb-6 border-b border-border"></div>
+				<div id="filter-bar" class="flex flex-wrap items-center gap-2 mb-7 pb-6 border-b border-border"></div>
 				<div id="projects-grid" class="grid grid-cols-3 gap-3 max-md:grid-cols-2 max-sm:grid-cols-1"></div>
 			</div>
 		</section>
@@ -210,8 +210,11 @@ function postHref(post: (typeof recentPosts)[number]) {
 		transform: translateY(0);
 	}
 
-	/* Filter pills */
-	:global(.filter-pill) {
+	/* Filter dropdowns */
+	:global(.filter-dropdown) {
+		position: relative;
+	}
+	:global(.filter-trigger) {
 		display: inline-flex;
 		align-items: center;
 		gap: 6px;
@@ -220,30 +223,122 @@ function postHref(post: (typeof recentPosts)[number]) {
 		color: var(--color-text-3);
 		background: transparent;
 		border: 1px solid var(--color-border);
-		border-radius: 999px;
-		padding: 5px 14px;
+		border-radius: 8px;
+		padding: 6px 12px;
 		cursor: pointer;
 		transition: color 0.15s, border-color 0.15s, background 0.15s;
 		white-space: nowrap;
 	}
-	:global(.filter-pill):hover {
+	:global(.filter-trigger):hover,
+	:global(.filter-trigger).open {
 		color: var(--color-text-2);
 		border-color: var(--color-border-2);
-	}
-	:global(.filter-pill).active {
-		color: var(--color-text-1);
 		background: var(--color-bg-2);
-		border-color: var(--color-border-2);
 	}
-	:global(.filter-pill) .pill-dot {
+	:global(.filter-trigger) .chevron {
+		transition: transform 0.15s;
+	}
+	:global(.filter-trigger).open .chevron {
+		transform: rotate(180deg);
+	}
+	:global(.filter-menu) {
+		position: absolute;
+		top: calc(100% + 4px);
+		left: 0;
+		min-width: 180px;
+		background: var(--color-bg-2);
+		border: 1px solid var(--color-border-2);
+		border-radius: 10px;
+		padding: 4px;
+		z-index: 50;
+		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.24);
+		display: none;
+	}
+	:global(.filter-menu).open {
+		display: block;
+	}
+	:global(.filter-option) {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		width: 100%;
+		font-family: var(--font-mono);
+		font-size: 12px;
+		color: var(--color-text-2);
+		background: transparent;
+		border: none;
+		border-radius: 6px;
+		padding: 7px 10px;
+		cursor: pointer;
+		transition: background 0.1s, color 0.1s;
+		text-align: left;
+	}
+	:global(.filter-option):hover {
+		background: var(--color-bg-3);
+		color: var(--color-text-1);
+	}
+	:global(.filter-option) .check {
+		width: 14px;
+		height: 14px;
+		border: 1px solid var(--color-border-2);
+		border-radius: 3px;
+		flex-shrink: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		transition: background 0.1s, border-color 0.1s;
+	}
+	:global(.filter-option).checked .check {
+		background: var(--color-text-1);
+		border-color: var(--color-text-1);
+	}
+	:global(.filter-option) .check svg {
+		display: none;
+	}
+	:global(.filter-option).checked .check svg {
+		display: block;
+	}
+	:global(.filter-option) .opt-dot {
 		width: 7px;
 		height: 7px;
 		border-radius: 50%;
 		flex-shrink: 0;
 	}
-	:global(.filter-pill) .pill-count {
+	:global(.filter-option) .opt-count {
 		font-size: 11px;
-		opacity: 0.5;
+		color: var(--color-text-3);
+		margin-left: auto;
+	}
+
+	/* Filter chips */
+	:global(.filter-chip) {
+		display: inline-flex;
+		align-items: center;
+		gap: 5px;
+		font-family: var(--font-mono);
+		font-size: 11px;
+		color: var(--color-text-1);
+		background: var(--color-bg-3);
+		border: 1px solid var(--color-border-2);
+		border-radius: 999px;
+		padding: 3px 8px 3px 10px;
+		cursor: pointer;
+		transition: background 0.1s, border-color 0.1s;
+		white-space: nowrap;
+	}
+	:global(.filter-chip):hover {
+		background: var(--color-border);
+	}
+	:global(.filter-chip) .chip-dot {
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		flex-shrink: 0;
+	}
+	:global(.filter-chip) .chip-x {
+		color: var(--color-text-3);
+		font-size: 13px;
+		line-height: 1;
 	}
 
 	/* Card inner elements */
@@ -322,31 +417,10 @@ function postHref(post: (typeof recentPosts)[number]) {
 		margin-left: 0;
 	}
 
-	:global(.filter-row) {
-		display: flex;
-		align-items: center;
-		gap: 6px;
-		flex-wrap: wrap;
-	}
-	:global(.filter-label) {
-		font-family: var(--font-mono);
-		font-size: 10px;
-		text-transform: uppercase;
-		letter-spacing: 0.08em;
-		color: var(--color-text-3);
-		opacity: 0.6;
-		width: 72px;
-		flex-shrink: 0;
-	}
-
 	@media (max-width: 768px) {
-		:global(.filter-pill) {
+		:global(.filter-trigger) {
 			font-size: 11px;
-			padding: 4px 11px;
-		}
-		:global(.filter-label) {
-			width: 56px;
-			font-size: 9px;
+			padding: 5px 10px;
 		}
 	}
 </style>
@@ -519,6 +593,116 @@ function postHref(post: (typeof recentPosts)[number]) {
 		return card;
 	}
 
+	function createCheckSvg(): SVGSVGElement {
+		const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+		svg.setAttribute("width", "10");
+		svg.setAttribute("height", "10");
+		svg.setAttribute("viewBox", "0 0 24 24");
+		svg.setAttribute("fill", "none");
+		svg.setAttribute("stroke", "var(--color-bg)");
+		svg.setAttribute("stroke-width", "3");
+		svg.setAttribute("stroke-linecap", "round");
+		svg.setAttribute("stroke-linejoin", "round");
+		const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+		path.setAttribute("d", "M20 6L9 17l-5-5");
+		svg.appendChild(path);
+		return svg;
+	}
+
+	function createChevronSvg(): SVGSVGElement {
+		const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+		svg.setAttribute("width", "12");
+		svg.setAttribute("height", "12");
+		svg.setAttribute("viewBox", "0 0 24 24");
+		svg.setAttribute("fill", "none");
+		svg.setAttribute("stroke", "currentColor");
+		svg.setAttribute("stroke-width", "2");
+		svg.setAttribute("stroke-linecap", "round");
+		svg.setAttribute("stroke-linejoin", "round");
+		svg.classList.add("chevron");
+		const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+		path.setAttribute("d", "M6 9l6 6 6-6");
+		svg.appendChild(path);
+		return svg;
+	}
+
+	let openDropdown: HTMLElement | null = null;
+
+	function closeAllDropdowns() {
+		document.querySelectorAll(".filter-menu.open").forEach((m) => m.classList.remove("open"));
+		document.querySelectorAll(".filter-trigger.open").forEach((t) => t.classList.remove("open"));
+		openDropdown = null;
+	}
+
+	document.addEventListener("click", (e) => {
+		if (openDropdown && !openDropdown.contains(e.target as Node)) {
+			closeAllDropdowns();
+		}
+	});
+
+	function renderChips() {
+		const bar = document.getElementById("filter-bar");
+		if (!bar) return;
+		bar.querySelectorAll(".filter-chip").forEach((c) => c.remove());
+
+		for (const cat of (["type", "framework", "language"] as Category[])) {
+			for (const value of activeFilters[cat]) {
+				const chip = document.createElement("button");
+				chip.type = "button";
+				chip.className = "filter-chip";
+
+				if (cat === "language" && LANG_COLORS[value]) {
+					const dot = document.createElement("span");
+					dot.className = "chip-dot";
+					dot.style.background = LANG_COLORS[value];
+					chip.appendChild(dot);
+				}
+
+				chip.appendChild(document.createTextNode(value));
+
+				const x = document.createElement("span");
+				x.className = "chip-x";
+				x.textContent = "\u00d7";
+				chip.appendChild(x);
+
+				chip.addEventListener("click", () => {
+					activeFilters[cat].delete(value);
+					updateDropdownState(cat);
+					renderChips();
+					renderGrid();
+				});
+
+				bar.appendChild(chip);
+			}
+		}
+	}
+
+	function updateDropdownState(cat: Category) {
+		const dropdown = document.querySelector(`.filter-dropdown[data-cat="${cat}"]`);
+		if (!dropdown) return;
+		const trigger = dropdown.querySelector(".filter-trigger");
+		const count = activeFilters[cat].size;
+		const countBadge = trigger?.querySelector(".trigger-count") as HTMLElement | null;
+
+		if (countBadge) {
+			if (count > 0) {
+				countBadge.textContent = String(count);
+				countBadge.style.display = "";
+			} else {
+				countBadge.style.display = "none";
+			}
+		}
+
+		dropdown.querySelectorAll<HTMLButtonElement>(".filter-option").forEach((opt) => {
+			const val = opt.dataset.value!;
+			if (activeFilters[cat].has(val)) {
+				opt.classList.add("checked");
+			} else {
+				opt.classList.remove("checked");
+			}
+		});
+	}
+
 	function buildFilterBar(projects: Project[]) {
 		const bar = document.getElementById("filter-bar");
 		if (!bar) return;
@@ -530,7 +714,6 @@ function postHref(post: (typeof recentPosts)[number]) {
 		];
 
 		for (const cat of categories) {
-			// Count values for this category
 			const counts = new Map<string, number>();
 			for (const p of projects) {
 				const tags = getTags(p);
@@ -539,75 +722,89 @@ function postHref(post: (typeof recentPosts)[number]) {
 				}
 			}
 
-			// Skip empty categories (e.g., framework if none have it)
 			if (counts.size === 0) continue;
 
 			const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1]);
 
-			const row = document.createElement("div");
-			row.className = "filter-row";
+			const dropdown = document.createElement("div");
+			dropdown.className = "filter-dropdown";
+			dropdown.dataset.cat = cat.key;
 
-			const label = document.createElement("span");
-			label.className = "filter-label";
-			label.textContent = cat.label;
-			row.appendChild(label);
+			// Trigger button
+			const trigger = document.createElement("button");
+			trigger.type = "button";
+			trigger.className = "filter-trigger";
+			trigger.appendChild(document.createTextNode(cat.label));
 
-			// "All" pill
-			const allBtn = document.createElement("button");
-			allBtn.type = "button";
-			allBtn.className = "filter-pill active";
-			allBtn.textContent = "All";
-			allBtn.addEventListener("click", () => {
-				activeFilters[cat.key].clear();
-				row.querySelectorAll(".filter-pill").forEach((p) => p.classList.remove("active"));
-				allBtn.classList.add("active");
-				renderGrid();
-			});
-			row.appendChild(allBtn);
+			const countBadge = document.createElement("span");
+			countBadge.className = "trigger-count";
+			countBadge.style.cssText = "display:none; font-size:10px; background:var(--color-text-1); color:var(--color-bg); border-radius:999px; min-width:16px; height:16px; line-height:16px; text-align:center; padding:0 4px;";
+			trigger.appendChild(countBadge);
+
+			trigger.appendChild(createChevronSvg());
+			dropdown.appendChild(trigger);
+
+			// Menu
+			const menu = document.createElement("div");
+			menu.className = "filter-menu";
 
 			for (const [value, count] of sorted) {
-				const btn = document.createElement("button");
-				btn.type = "button";
-				btn.className = "filter-pill";
+				const opt = document.createElement("button");
+				opt.type = "button";
+				opt.className = "filter-option";
+				opt.dataset.value = value;
+
+				const check = document.createElement("span");
+				check.className = "check";
+				check.appendChild(createCheckSvg());
+				opt.appendChild(check);
 
 				if (cat.key === "language" && LANG_COLORS[value]) {
 					const dot = document.createElement("span");
-					dot.className = "pill-dot";
+					dot.className = "opt-dot";
 					dot.style.background = LANG_COLORS[value];
-					btn.appendChild(dot);
+					opt.appendChild(dot);
 				}
 
-				btn.appendChild(document.createTextNode(value));
+				opt.appendChild(document.createTextNode(value));
 
 				const countEl = document.createElement("span");
-				countEl.className = "pill-count";
+				countEl.className = "opt-count";
 				countEl.textContent = String(count);
-				btn.appendChild(countEl);
+				opt.appendChild(countEl);
 
-				btn.addEventListener("click", () => {
+				opt.addEventListener("click", (e) => {
+					e.stopPropagation();
 					const set = activeFilters[cat.key];
 					if (set.has(value)) {
 						set.delete(value);
-						btn.classList.remove("active");
+						opt.classList.remove("checked");
 					} else {
 						set.add(value);
-						btn.classList.add("active");
+						opt.classList.add("checked");
 					}
-
-					// Deactivate "All" if any specific filter is active, or reactivate if none
-					if (set.size === 0) {
-						allBtn.classList.add("active");
-					} else {
-						allBtn.classList.remove("active");
-					}
-
+					updateDropdownState(cat.key);
+					renderChips();
 					renderGrid();
 				});
 
-				row.appendChild(btn);
+				menu.appendChild(opt);
 			}
 
-			bar.appendChild(row);
+			dropdown.appendChild(menu);
+
+			trigger.addEventListener("click", (e) => {
+				e.stopPropagation();
+				const isOpen = menu.classList.contains("open");
+				closeAllDropdowns();
+				if (!isOpen) {
+					menu.classList.add("open");
+					trigger.classList.add("open");
+					openDropdown = dropdown;
+				}
+			});
+
+			bar.appendChild(dropdown);
 		}
 	}
 
@@ -627,6 +824,7 @@ function postHref(post: (typeof recentPosts)[number]) {
 		}
 
 		grid.querySelectorAll(".fade-in").forEach((el) => observer.observe(el));
+		renderChips();
 	}
 
 	async function loadProjects() {

@@ -1,6 +1,9 @@
 name = "lucasilverentand-com"
 account_id = "029d254cac84938ccede0b57a8711f31"
-compatibility_date = "2025-03-30"
+compatibility_date = "2026-04-10"
+
+[build]
+command = "bun install && bun run build"
 
 [[routes]]
 pattern = "lucasilverentand.com"

@@ -22,137 +22,33 @@ function postHref(post: (typeof recentPosts)[number]) {
 	return post.externalUrl ?? `/blog/${post.id}`;
 }
 
-const ai = [
-	{
-		name: "skills",
-		desc: "72 Claude Code skills in 16 plugins and 7 intent-based bundles",
-		lang: "TypeScript",
-		stars: 2,
-		url: "https://github.com/lucasilverentand/skills",
-	},
-	{
-		name: "tkn",
-		desc: "Shell proxy that optimizes CLI output for AI assistants by reducing token usage",
-		lang: "Rust",
-		stars: 1,
-		url: "https://github.com/lucasilverentand/tkn",
-	},
-	{
-		name: "claudeline",
-		desc: "Customizable status line for Claude Code with themes, git, and cost tracking",
-		lang: "TypeScript",
-		stars: 1,
-		url: "https://github.com/lucasilverentand/claudeline",
-	},
-	{
-		name: "pane",
-		desc: "Terminal multiplexer and macOS app for managing AI coding agents",
-		lang: "Rust",
-		url: "https://github.com/lucasilverentand/pane",
-	},
-	{
-		name: "clusage",
-		desc: "macOS menu bar app to track Claude API usage across multiple accounts",
-		lang: "Swift",
-		url: "https://github.com/lucasilverentand/clusage",
-	},
-	{
-		name: "apple-music-mcp",
-		desc: "MCP server for controlling Apple Music from Claude Code",
-		lang: "TypeScript",
-		url: "https://github.com/lucasilverentand/apple-music-mcp",
-	},
-];
-
-const infra = [
-	{
-		name: "kustodian",
-		desc: "GitOps templating framework for Kubernetes with Flux CD",
-		lang: "TypeScript",
-		url: "https://github.com/lucasilverentand/kustodian",
-	},
-	{
-		name: "canaveral",
-		desc: "CLI for automated package and app release workflows",
-		lang: "Rust",
-		url: "https://github.com/lucasilverentand/canaveral",
-	},
-	{
-		name: "tarmac",
-		desc: "Runs ephemeral GitHub Actions runners inside virtual macOS VMs on Apple Silicon",
-		lang: "Swift",
-		url: "https://github.com/lucasilverentand/tarmac",
-	},
-	{
-		name: "dot-steward",
-		desc: "Declarative dotfile management with symlink tracking",
-		lang: "Rust",
-		url: "https://github.com/lucasilverentand/dot-steward",
-	},
-	{
-		name: "unifi-cli",
-		desc: "CLI and MCP server for the UniFi Network API with 67 auto-generated commands",
-		lang: "TypeScript",
-		url: "https://github.com/lucasilverentand/unifi-cli",
-	},
-];
-
-const misc = [
-	{
-		name: "ha-inhabit",
-		desc: "Visual home editor and sensor automation for Home Assistant",
-		lang: "Python",
-		url: "https://github.com/lucasilverentand/ha-inhabit",
-	},
-	{
-		name: "lumo-optimized",
-		desc: "Performance-focused Fabric modpack for Minecraft 1.21.8",
-		lang: "JavaScript",
-		url: "https://github.com/lucasilverentand/lumo-optimized",
-	},
-	{
-		name: "lumo-server",
-		desc: "Docker image for running a modded Minecraft server",
-		lang: "Python",
-		url: "https://github.com/lucasilverentand/lumo-server",
-	},
-];
-
-type Project = { name: string; desc: string; lang: string; stars?: number; url: string };
-
-const langColor: Record<string, string> = {
-	Swift: "#ff453a",
-	Rust: "#e05a00",
-	TypeScript: "#3b82f6",
-	JavaScript: "#eab308",
-	Python: "#4b91f7",
-};
 ---
 
 <Layout>
 	<main>
-		<section class="hero">
-			<div class="wrap hero-entrance">
-				<div class="hero-row">
-					<div class="portrait">
+		<!-- Hero -->
+		<section class="pt-30 pb-20 max-md:pt-20 max-md:pb-15">
+			<div class="max-w-[960px] mx-auto px-6 animate-hero-in">
+				<div class="flex items-center gap-12 max-md:flex-col max-md:items-center max-md:gap-8">
+					<div class="shrink-0">
 						<DitheredPortrait size={260} />
 					</div>
-					<div class="hero-text">
-						<h1>Luca Silverentand</h1>
-						<p class="tagline">
+					<div class="min-w-0 max-md:text-center">
+						<h1 class="font-display text-[clamp(48px,8vw,88px)] font-normal leading-none tracking-tight mb-5 animate-hero-in-h1">Luca Silverentand</h1>
+						<p class="text-[17px] leading-relaxed text-text-2 max-w-[520px] mb-7 animate-hero-in-sub">
 							Self-taught developer with 15+ years of building apps, infrastructure, and everything in between.<br />
-							Running <a href="https://github.com/seventwo-studio" target="_blank" rel="noopener">SevenTwo Studio</a> from the Netherlands.
+							Running <a href="https://github.com/seventwo-studio" target="_blank" rel="noopener" class="text-text-1 underline decoration-border-2 underline-offset-3 transition-[text-decoration-color] duration-150 hover:decoration-text-2">SevenTwo Studio</a> from the Netherlands.
 						</p>
-						<div class="links">
-							<a href="https://github.com/lucasilverentand" target="_blank" rel="noopener" class="link">
+						<div class="flex gap-3 max-md:justify-center animate-hero-in-links">
+							<a href="https://github.com/lucasilverentand" target="_blank" rel="noopener" class="inline-flex items-center gap-[7px] font-mono text-[13px] text-text-2 transition-colors duration-150 hover:text-text-1">
 								<Icon name="simple-icons:github" size={16} />
 								GitHub
 							</a>
-							<a href="https://threads.net/@luca.silverentand" target="_blank" rel="noopener" class="link">
+							<a href="https://threads.net/@luca.silverentand" target="_blank" rel="noopener" class="inline-flex items-center gap-[7px] font-mono text-[13px] text-text-2 transition-colors duration-150 hover:text-text-1">
 								<Icon name="simple-icons:threads" size={16} />
 								Threads
 							</a>
-							<a href="https://instagram.com/luca.silverentand" target="_blank" rel="noopener" class="link">
+							<a href="https://instagram.com/luca.silverentand" target="_blank" rel="noopener" class="inline-flex items-center gap-[7px] font-mono text-[13px] text-text-2 transition-colors duration-150 hover:text-text-1">
 								<Icon name="simple-icons:instagram" size={16} />
 								Instagram
 							</a>
@@ -162,52 +58,91 @@ const langColor: Record<string, string> = {
 			</div>
 		</section>
 
-		<section class="featured">
-			<div class="wrap">
-				<div class="featured-card fade-in">
-					<div class="featured-header">
-						<span class="badge">iOS App</span>
-						<span class="tech">Swift &middot; SwiftUI &middot; AirPods Motion</span>
+		<!-- Featured -->
+		<section class="pb-18">
+			<div class="max-w-[960px] mx-auto px-6">
+				<div class="border border-border rounded-[14px] p-9 max-md:p-6 bg-bg-2 fade-in">
+					<div class="flex items-center gap-3 mb-4">
+						<span class="font-mono text-[11px] font-medium uppercase tracking-widest text-accent bg-accent-dim px-2.5 py-1 rounded-md">iOS App</span>
+						<span class="font-mono text-xs text-text-3">Swift &middot; SwiftUI &middot; AirPods Motion</span>
 					</div>
-					<h2>HeadHigh</h2>
-					<p>
+					<h2 class="font-display text-[40px] font-normal leading-tight mb-3">HeadHigh</h2>
+					<p class="text-[15px] leading-relaxed text-text-2 max-w-[560px] mb-6">
 						Real-time posture correction using AirPods motion data. Monitors your head
 						position and delivers subtle haptic nudges when you slouch &mdash; no extra
 						hardware needed.
 					</p>
-					<div class="featured-links">
-						<a href="https://apps.apple.com/app/headhigh/id6748973690" target="_blank" rel="noopener" class="btn-primary">
+					<div class="flex gap-2.5">
+						<a href="https://apps.apple.com/app/headhigh/id6499446045" target="_blank" rel="noopener" class="inline-flex items-center gap-[7px] font-mono text-[13px] font-medium text-bg bg-text-1 px-4.5 py-2.5 rounded-lg transition-opacity duration-150 hover:opacity-85">
 							<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
 							App Store
 						</a>
-						</div>
+					</div>
 				</div>
 			</div>
 		</section>
 
+		<!-- Lunar Wallpapers Promo -->
+		<section class="pb-18">
+			<div class="max-w-[960px] mx-auto px-6">
+				<a href="https://lunar.lucasilverentand.com" target="_blank" rel="noopener" class="lunar-promo group block relative rounded-[14px] overflow-hidden border border-border fade-in">
+					<!-- Background mosaic -->
+					<div class="absolute inset-0 grid grid-cols-4 max-md:grid-cols-3 opacity-40 group-hover:opacity-50 transition-opacity duration-500">
+						<img src="https://lunar.lucasilverentand.com/thumbnails/moon-upper-hemisphere.jpg" alt="" class="w-full h-full object-cover" loading="lazy" />
+						<img src="https://lunar.lucasilverentand.com/thumbnails/total-solar-eclipse-corona.jpg" alt="" class="w-full h-full object-cover" loading="lazy" />
+						<img src="https://lunar.lucasilverentand.com/thumbnails/crescent-moon-from-orion.jpg" alt="" class="w-full h-full object-cover" loading="lazy" />
+						<img src="https://lunar.lucasilverentand.com/thumbnails/moon-with-earth-background.jpg" alt="" class="w-full h-full object-cover max-md:hidden" loading="lazy" />
+					</div>
+					<div class="absolute inset-0 bg-gradient-to-r from-[#0a0a12] via-[#0a0a12]/90 to-[#0a0a12]/60"></div>
+					<!-- Content -->
+					<div class="relative p-9 max-md:p-6">
+						<div class="flex items-center gap-3 mb-4">
+							<span class="font-mono text-[11px] font-medium uppercase tracking-widest text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded-md">Free Wallpapers</span>
+							<span class="font-mono text-xs text-neutral-500">NASA Artemis II</span>
+						</div>
+						<h2 class="font-display text-[40px] font-normal leading-tight mb-3 text-white">Lunar Wallpapers</h2>
+						<p class="text-[15px] leading-relaxed text-neutral-400 max-w-[480px] mb-6">
+							33 photos from the Artemis II lunar flyby, cropped into free
+							wallpapers for every screen &mdash; 5K, 4K, and phone sizes.
+						</p>
+						<span class="inline-flex items-center gap-2 font-mono text-[13px] font-medium text-white bg-white/10 backdrop-blur-sm px-4.5 py-2.5 rounded-lg group-hover:bg-white/15 transition-colors duration-150">
+							Browse wallpapers
+							<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 transition-transform duration-150 group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+							</svg>
+						</span>
+					</div>
+				</a>
+			</div>
+		</section>
+
+		<!-- Writing -->
 		{recentPosts.length > 0 && (
-			<section class="writing">
-				<div class="wrap">
-					<h2>Latest Writing</h2>
-					{recentPosts.map((post) => (
+			<section class="pb-18">
+				<div class="max-w-[960px] mx-auto px-6">
+					<h2 class="font-display text-[32px] font-normal mb-6">Latest Writing</h2>
+					{recentPosts.map((post, i) => (
 						<a
 							href={postHref(post)}
-							class="post-row fade-in"
+							class:list={[
+								"flex items-baseline justify-between gap-6 py-4.5 border-b border-border transition-opacity duration-150 hover:opacity-75 fade-in",
+								i === 0 && "border-t",
+							]}
 							target={post.externalUrl ? "_blank" : undefined}
 							rel={post.externalUrl ? "noopener noreferrer" : undefined}
 						>
-							<div class="post-info">
-								<span class="post-title">{post.title}</span>
-								<span class="post-desc">
+							<div class="flex flex-col gap-1 min-w-0">
+								<span class="font-mono text-sm font-medium text-text-1">{post.title}</span>
+								<span class="text-[13px] text-text-3 leading-normal truncate max-md:hidden">
 									{post.source ? `${post.source} · ${post.description}` : post.description}
 								</span>
 							</div>
-							<time datetime={post.date.toISOString()}>{formatDate(post.date)}</time>
+							<time datetime={post.date.toISOString()} class="font-mono text-xs text-text-3 whitespace-nowrap shrink-0">{formatDate(post.date)}</time>
 						</a>
 					))}
-					<div class="writing-cta fade-in">
-						<p class="cta-prose">I write about building products, developer tooling, and lessons from 15+ years of teaching myself to code. From deep dives on Rust and Swift to the messy reality of shipping side projects — no fluff, just things I've actually learned.</p>
-						<a href="/blog" class="see-all">
+					<div class="mt-10 border border-border rounded-xl px-7 py-7 text-center fade-in">
+						<p class="text-[15px] leading-relaxed text-text-2 max-w-[540px] mx-auto mb-5">I write about building products, developer tooling, and lessons from 15+ years of teaching myself to code. From deep dives on Rust and Swift to the messy reality of shipping side projects — no fluff, just things I've actually learned.</p>
+						<a href="/blog" class="inline-block font-mono text-sm text-text-1 bg-bg-2 px-6 py-2.5 rounded-full transition-opacity duration-150 hover:opacity-80">
 							{remainingCount > 0 ? `Read ${remainingCount} more articles` : "Browse all writing"} &rarr;
 						</a>
 					</div>
@@ -215,66 +150,15 @@ const langColor: Record<string, string> = {
 			</section>
 		)}
 
-		<section class="projects">
-			<div class="wrap">
-				<h2>Open Source</h2>
-
-				<div class="group">
-					<h3>AI Developer Tools</h3>
-					<div class="grid">
-						{ai.map((p: Project) => (
-							<a href={p.url} target="_blank" rel="noopener" class="card fade-in">
-								<div class="card-header">
-									<span class="name">{p.name}</span>
-									{p.stars && (
-										<span class="stars">
-											<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-											{p.stars}
-										</span>
-									)}
-								</div>
-								<p>{p.desc}</p>
-								<span class="lang" style={`--c: ${langColor[p.lang]}`}>
-									<span class="dot"></span>{p.lang}
-								</span>
-							</a>
-						))}
-					</div>
+		<!-- Projects -->
+		<section class="pt-16 pb-20 border-t border-border">
+			<div class="max-w-[960px] mx-auto px-6">
+				<div class="flex items-baseline gap-3 mb-6">
+					<h2 class="font-display text-[32px] font-normal">Projects</h2>
+					<span id="projects-count" class="font-mono text-[13px] text-text-3"></span>
 				</div>
-
-				<div class="group">
-					<h3>Developer & Infrastructure</h3>
-					<div class="grid">
-						{infra.map((p: Project) => (
-							<a href={p.url} target="_blank" rel="noopener" class="card fade-in">
-								<div class="card-header">
-									<span class="name">{p.name}</span>
-								</div>
-								<p>{p.desc}</p>
-								<span class="lang" style={`--c: ${langColor[p.lang]}`}>
-									<span class="dot"></span>{p.lang}
-								</span>
-							</a>
-						))}
-					</div>
-				</div>
-
-				<div class="group">
-					<h3>Home & Gaming</h3>
-					<div class="grid">
-						{misc.map((p: Project) => (
-							<a href={p.url} target="_blank" rel="noopener" class="card fade-in">
-								<div class="card-header">
-									<span class="name">{p.name}</span>
-								</div>
-								<p>{p.desc}</p>
-								<span class="lang" style={`--c: ${langColor[p.lang]}`}>
-									<span class="dot"></span>{p.lang}
-								</span>
-							</a>
-						))}
-					</div>
-				</div>
+				<div id="filter-bar" class="flex flex-col gap-2.5 mb-7 pb-6 border-b border-border"></div>
+				<div id="projects-grid" class="grid grid-cols-3 gap-3 max-md:grid-cols-2 max-sm:grid-cols-1"></div>
 			</div>
 		</section>
 	</main>
@@ -283,368 +167,497 @@ const langColor: Record<string, string> = {
 </Layout>
 
 <style>
-	.wrap {
-		max-width: 960px;
-		margin: 0 auto;
-		padding: 0 24px;
-	}
-
-
-
-	/* ── Hero ── */
-	.hero {
-		padding: 120px 0 80px;
-	}
-	.hero-row {
-		display: flex;
-		align-items: center;
-		gap: 48px;
-	}
-	.portrait {
-		flex-shrink: 0;
-	}
-	.hero-text {
-		min-width: 0;
-	}
-	.hero h1 {
-		font-family: var(--font-display);
-		font-size: clamp(48px, 8vw, 88px);
-		font-weight: 400;
-		line-height: 1;
-		letter-spacing: -0.025em;
-		margin-bottom: 20px;
-	}
-	.tagline {
-		font-size: 17px;
-		line-height: 1.7;
-		color: var(--text-2);
-		max-width: 520px;
-		margin-bottom: 28px;
-	}
-	.tagline a {
-		color: var(--text-1);
-		text-decoration: underline;
-		text-decoration-color: var(--border-2);
-		text-underline-offset: 3px;
-		transition: text-decoration-color 0.15s;
-	}
-	.tagline a:hover { text-decoration-color: var(--text-2); }
-
-	.links { display: flex; gap: 12px; }
-	.link {
-		display: inline-flex;
-		align-items: center;
-		gap: 7px;
-		font-family: var(--font-mono);
-		font-size: 13px;
-		color: var(--text-2);
-		transition: color 0.15s;
-	}
-	.link:hover { color: var(--text-1); }
-
-	/* ── Featured ── */
-	.featured {
-		padding-bottom: 72px;
-	}
-	.featured-card {
-		border: 1px solid var(--border);
-		border-radius: 14px;
-		padding: 36px 40px;
-		background: var(--bg-2);
-	}
-	.featured-header {
-		display: flex;
-		align-items: center;
-		gap: 12px;
-		margin-bottom: 16px;
-	}
-	.badge {
-		font-family: var(--font-mono);
-		font-size: 11px;
-		font-weight: 500;
-		text-transform: uppercase;
-		letter-spacing: 0.08em;
-		color: var(--accent);
-		background: var(--accent-dim);
-		padding: 4px 10px;
-		border-radius: 6px;
-	}
-	.tech {
-		font-family: var(--font-mono);
-		font-size: 12px;
-		color: var(--text-3);
-	}
-	.featured-card h2 {
-		font-family: var(--font-display);
-		font-size: 40px;
-		font-weight: 400;
-		line-height: 1.1;
-		margin-bottom: 12px;
-	}
-	.featured-card p {
-		font-size: 15px;
-		line-height: 1.7;
-		color: var(--text-2);
-		max-width: 560px;
-		margin-bottom: 24px;
-	}
-	.featured-links {
-		display: flex;
-		gap: 10px;
-	}
-	.btn-primary {
-		display: inline-flex;
-		align-items: center;
-		gap: 7px;
-		font-family: var(--font-mono);
-		font-size: 13px;
-		font-weight: 500;
-		color: var(--bg);
-		background: var(--text-1);
-		padding: 9px 18px;
-		border-radius: 8px;
-		transition: opacity 0.15s;
-	}
-	.btn-primary:hover { opacity: 0.85; }
-	.btn-ghost {
-		font-family: var(--font-mono);
-		font-size: 13px;
-		color: var(--text-2);
-		border: 1px solid var(--border-2);
-		padding: 9px 18px;
-		border-radius: 8px;
-		transition: border-color 0.15s, color 0.15s;
-	}
-	.btn-ghost:hover {
-		border-color: var(--text-3);
-		color: var(--text-1);
-	}
-
-	/* ── Projects ── */
-	.projects {
-		padding: 64px 0 80px;
-		border-top: 1px solid var(--border);
-	}
-	.projects > .wrap > h2 {
-		font-family: var(--font-display);
-		font-size: 32px;
-		font-weight: 400;
-		margin-bottom: 48px;
-	}
-	.group {
-		margin-bottom: 48px;
-	}
-	.group:last-child { margin-bottom: 0; }
-	.group h3 {
-		font-family: var(--font-mono);
-		font-size: 12px;
-		font-weight: 400;
-		text-transform: uppercase;
-		letter-spacing: 0.08em;
-		color: var(--text-3);
-		margin-bottom: 16px;
-		padding-bottom: 12px;
-		border-bottom: 1px solid var(--border);
-	}
-	.grid {
-		display: grid;
-		grid-template-columns: repeat(3, 1fr);
-		gap: 10px;
-	}
-	.card {
+	/* Card styles — need CSS custom properties and pseudo-elements */
+	:global(.card) {
 		display: flex;
 		flex-direction: column;
-		border: 1px solid var(--border);
-		border-radius: 10px;
-		padding: 18px 20px;
-		transition: border-color 0.15s, background 0.15s;
+		border: 1px solid var(--color-border);
+		border-radius: 12px;
+		padding: 20px 22px 18px;
+		transition: border-color 0.2s, background 0.2s, box-shadow 0.2s, transform 0.2s;
+		position: relative;
+		overflow: hidden;
 	}
-	.card:hover {
-		border-color: var(--border-2);
-		background: var(--bg-2);
+	:global(.card)::before {
+		content: "";
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		height: 2px;
+		background: var(--card-accent, var(--color-border));
+		opacity: 0;
+		transition: opacity 0.2s;
 	}
-	.card-header {
+	:global(.card):hover {
+		border-color: var(--color-border-2);
+		background: var(--color-bg-2);
+		transform: translateY(-2px);
+		box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+	}
+	:global(.card):hover::before {
+		opacity: 1;
+	}
+
+	/* Fade-in animation */
+	:global(.fade-in) {
+		opacity: 0;
+		transform: translateY(16px);
+		transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+	}
+	:global(.fade-in.visible) {
+		opacity: 1;
+		transform: translateY(0);
+	}
+
+	/* Filter pills */
+	:global(.filter-pill) {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		font-family: var(--font-mono);
+		font-size: 12px;
+		color: var(--color-text-3);
+		background: transparent;
+		border: 1px solid var(--color-border);
+		border-radius: 999px;
+		padding: 5px 14px;
+		cursor: pointer;
+		transition: color 0.15s, border-color 0.15s, background 0.15s;
+		white-space: nowrap;
+	}
+	:global(.filter-pill):hover {
+		color: var(--color-text-2);
+		border-color: var(--color-border-2);
+	}
+	:global(.filter-pill).active {
+		color: var(--color-text-1);
+		background: var(--color-bg-2);
+		border-color: var(--color-border-2);
+	}
+	:global(.filter-pill) .pill-dot {
+		width: 7px;
+		height: 7px;
+		border-radius: 50%;
+		flex-shrink: 0;
+	}
+	:global(.filter-pill) .pill-count {
+		font-size: 11px;
+		opacity: 0.5;
+	}
+
+	/* Card inner elements */
+	:global(.card-header) {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		margin-bottom: 6px;
+		gap: 8px;
+		margin-bottom: 8px;
 	}
-	.name {
+	:global(.card .name) {
 		font-family: var(--font-mono);
 		font-size: 14px;
-		font-weight: 500;
-		color: var(--text-1);
+		font-weight: 600;
+		color: var(--color-text-1);
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
-	.stars {
+	:global(.card .stars) {
 		display: flex;
 		align-items: center;
-		gap: 3px;
+		gap: 4px;
 		font-family: var(--font-mono);
 		font-size: 12px;
-		color: var(--text-3);
+		color: var(--color-text-3);
+		flex-shrink: 0;
 	}
-	.card p {
+	:global(.card p) {
 		font-size: 13px;
-		line-height: 1.55;
-		color: var(--text-2);
+		line-height: 1.6;
+		color: var(--color-text-2);
 		flex: 1;
-		margin-bottom: 14px;
+		margin-bottom: 16px;
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
 	}
-	.lang {
+	:global(.card-footer) {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+	}
+	:global(.card .lang) {
 		display: inline-flex;
 		align-items: center;
 		gap: 6px;
 		font-family: var(--font-mono);
 		font-size: 11px;
-		color: var(--text-3);
+		color: var(--color-text-3);
 	}
-	.dot {
-		width: 8px;
-		height: 8px;
+	:global(.card .lang .dot) {
+		width: 7px;
+		height: 7px;
 		border-radius: 50%;
 		background: var(--c);
 	}
-
-	/* ── Writing ── */
-	.writing {
-		padding-bottom: 72px;
-	}
-	.writing h2 {
-		font-family: var(--font-display);
-		font-size: 32px;
-		font-weight: 400;
-		margin-bottom: 24px;
-	}
-	.writing-cta {
-		margin-top: 40px;
-		border: 1px solid var(--border);
-		border-radius: 12px;
-		padding: 28px 28px 24px;
-		text-align: center;
-	}
-	.cta-prose {
-		font-size: 15px;
-		line-height: 1.65;
-		color: var(--text-2);
-		max-width: 540px;
-		margin: 0 auto 20px;
-	}
-	.see-all {
-		display: inline-block;
+	:global(.card-owner) {
 		font-family: var(--font-mono);
-		font-size: 14px;
-		color: var(--text-1);
-		background: var(--bg-2);
-		padding: 10px 24px;
+		font-size: 10px;
+		color: var(--color-text-3);
+		background: var(--color-bg-3);
+		padding: 2px 8px;
 		border-radius: 999px;
-		transition: opacity 0.15s;
+		margin-left: auto;
 	}
-	.see-all:hover {
-		opacity: 0.8;
-	}
-	.post-row {
-		display: flex;
-		align-items: baseline;
-		justify-content: space-between;
-		gap: 24px;
-		padding: 18px 0;
-		border-bottom: 1px solid var(--border);
-		transition: opacity 0.15s;
-	}
-	.post-row:first-of-type {
-		border-top: 1px solid var(--border);
-	}
-	.post-row:hover { opacity: 0.75; }
-	.post-info {
-		display: flex;
-		flex-direction: column;
-		gap: 4px;
-		min-width: 0;
-	}
-	.post-title {
+	:global(.card-updated) {
 		font-family: var(--font-mono);
-		font-size: 14px;
-		font-weight: 500;
-		color: var(--text-1);
+		font-size: 10px;
+		color: var(--color-text-3);
+		opacity: 0.6;
+		margin-left: auto;
 	}
-	.post-desc {
-		font-size: 13px;
-		color: var(--text-3);
-		line-height: 1.5;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
+	:global(.card-owner + .card-updated) {
+		margin-left: 0;
 	}
-	.post-row time {
+
+	:global(.filter-row) {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		flex-wrap: wrap;
+	}
+	:global(.filter-label) {
 		font-family: var(--font-mono);
-		font-size: 12px;
-		color: var(--text-3);
-		white-space: nowrap;
+		font-size: 10px;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--color-text-3);
+		opacity: 0.6;
+		width: 72px;
 		flex-shrink: 0;
 	}
 
-	/* ── Animations ── */
-	@keyframes hero-in {
-		from {
-			opacity: 0;
-			transform: translateY(24px);
-		}
-		to {
-			opacity: 1;
-			transform: translateY(0);
-		}
-	}
-	.hero-entrance {
-		animation: hero-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
-	}
-	.hero-entrance h1 {
-		animation: hero-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both;
-	}
-	.hero-entrance .tagline {
-		animation: hero-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
-	}
-	.hero-entrance .links {
-		animation: hero-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.25s both;
-	}
-
-	.fade-in {
-		opacity: 0;
-		transform: translateY(16px);
-		transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-	}
-	.fade-in.visible {
-		opacity: 1;
-		transform: translateY(0);
-	}
-
-	/* Stagger cards within a grid */
-	.grid .fade-in:nth-child(1) { transition-delay: 0s; }
-	.grid .fade-in:nth-child(2) { transition-delay: 0.06s; }
-	.grid .fade-in:nth-child(3) { transition-delay: 0.12s; }
-	.grid .fade-in:nth-child(4) { transition-delay: 0.18s; }
-	.grid .fade-in:nth-child(5) { transition-delay: 0.24s; }
-	.grid .fade-in:nth-child(6) { transition-delay: 0.30s; }
-
-	/* ── Responsive ── */
 	@media (max-width: 768px) {
-		.hero { padding: 80px 0 60px; }
-		.hero-row {
-			flex-direction: column;
-			align-items: center;
-			gap: 32px;
+		:global(.filter-pill) {
+			font-size: 11px;
+			padding: 4px 11px;
 		}
-		.hero-text { text-align: center; }
-		.links { justify-content: center; }
-		.featured-card { padding: 28px 24px; }
-		.grid { grid-template-columns: repeat(2, 1fr); }
-		.post-desc { display: none; }
+		:global(.filter-label) {
+			width: 56px;
+			font-size: 9px;
+		}
 	}
-	@media (max-width: 520px) {
-		.grid { grid-template-columns: 1fr; }
-}
 </style>
 
 <script>
+	const LANG_COLORS: Record<string, string> = {
+		swift: "#ff453a",
+		rust: "#e05a00",
+		typescript: "#3b82f6",
+		javascript: "#eab308",
+		python: "#4b91f7",
+		astro: "#ff5d01",
+		shell: "#89e051",
+		go: "#00add8",
+		ruby: "#cc342d",
+		mdx: "#fcb32c",
+		yaml: "#cb171e",
+		markdown: "#083fa1",
+	};
+
+	interface Tags {
+		type: string[];
+		framework: string[];
+		language: string[];
+	}
+
+	interface Project {
+		name: string;
+		description: string | null;
+		owner: string;
+		url: string | null;
+		homepage: string | null;
+		language: string | null;
+		stars: number;
+		topics: string[];
+		updated_at: string | null;
+		source: "github" | "published-app";
+		platform?: string;
+		app_store_url?: string;
+		tags?: Tags;
+	}
+
+	const PROJECTS_URL =
+		"https://raw.githubusercontent.com/lucasilverentand/lucasilverentand/main/projects.json";
+
+	type Category = "type" | "framework" | "language";
+
+	let allProjects: Project[] = [];
+	const activeFilters: Record<Category, Set<string>> = {
+		type: new Set(),
+		framework: new Set(),
+		language: new Set(),
+	};
+
+	function timeAgo(dateStr: string): string {
+		const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+		const intervals: [number, string][] = [
+			[31536000, "y"],
+			[2592000, "mo"],
+			[604800, "w"],
+			[86400, "d"],
+			[3600, "h"],
+		];
+		for (const [secs, label] of intervals) {
+			const count = Math.floor(seconds / secs);
+			if (count >= 1) return `${count}${label} ago`;
+		}
+		return "just now";
+	}
+
+	function getTags(p: Project): Tags {
+		if (p.tags) return p.tags;
+		// Backward compat: derive from old fields
+		return {
+			type: [],
+			framework: [],
+			language: p.language ? [p.language.toLowerCase()] : [],
+		};
+	}
+
+	function matchesFilters(p: Project): boolean {
+		const tags = getTags(p);
+		const matchType = activeFilters.type.size === 0 ||
+			tags.type.some((t) => activeFilters.type.has(t));
+		const matchFramework = activeFilters.framework.size === 0 ||
+			tags.framework.some((f) => activeFilters.framework.has(f));
+		const matchLanguage = activeFilters.language.size === 0 ||
+			tags.language.some((l) => activeFilters.language.has(l));
+		return matchType && matchFramework && matchLanguage;
+	}
+
+	function createStarSvg(): SVGSVGElement {
+		const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+		svg.setAttribute("width", "12");
+		svg.setAttribute("height", "12");
+		svg.setAttribute("viewBox", "0 0 24 24");
+		svg.setAttribute("fill", "currentColor");
+		const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+		path.setAttribute("d", "M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z");
+		svg.appendChild(path);
+		return svg;
+	}
+
+	function createCard(p: Project, index: number): HTMLAnchorElement {
+		const tags = getTags(p);
+		const card = document.createElement("a");
+		card.href = p.url ?? p.homepage ?? p.app_store_url ?? "#";
+		card.target = "_blank";
+		card.rel = "noopener";
+		card.className = "card fade-in";
+		card.style.transitionDelay = `${Math.min(index, 11) * 0.03}s`;
+
+		const lang = tags.language[0];
+		const accent = lang ? (LANG_COLORS[lang] ?? "var(--color-border-2)") : "var(--color-border-2)";
+		card.style.setProperty("--card-accent", accent);
+
+		// Header
+		const header = document.createElement("div");
+		header.className = "card-header";
+		const name = document.createElement("span");
+		name.className = "name";
+		name.textContent = p.name;
+		header.appendChild(name);
+
+		if (p.stars > 0) {
+			const stars = document.createElement("span");
+			stars.className = "stars";
+			stars.appendChild(createStarSvg());
+			stars.appendChild(document.createTextNode(String(p.stars)));
+			header.appendChild(stars);
+		}
+
+		card.appendChild(header);
+
+		// Description
+		const desc = document.createElement("p");
+		desc.textContent = p.description ?? "";
+		card.appendChild(desc);
+
+		// Footer
+		const footer = document.createElement("div");
+		footer.className = "card-footer";
+
+		if (lang) {
+			const langEl = document.createElement("span");
+			langEl.className = "lang";
+			langEl.style.setProperty("--c", LANG_COLORS[lang] ?? "var(--color-text-3)");
+			const dot = document.createElement("span");
+			dot.className = "dot";
+			langEl.appendChild(dot);
+			langEl.appendChild(document.createTextNode(lang));
+			footer.appendChild(langEl);
+		}
+
+		if (p.owner !== "lucasilverentand") {
+			const owner = document.createElement("span");
+			owner.className = "card-owner";
+			owner.textContent = p.owner;
+			footer.appendChild(owner);
+		}
+
+		if (p.updated_at) {
+			const updated = document.createElement("span");
+			updated.className = "card-updated";
+			updated.textContent = timeAgo(p.updated_at);
+			footer.appendChild(updated);
+		}
+
+		card.appendChild(footer);
+		return card;
+	}
+
+	function buildFilterBar(projects: Project[]) {
+		const bar = document.getElementById("filter-bar");
+		if (!bar) return;
+
+		const categories: { key: Category; label: string }[] = [
+			{ key: "type", label: "Type" },
+			{ key: "framework", label: "Framework" },
+			{ key: "language", label: "Language" },
+		];
+
+		for (const cat of categories) {
+			// Count values for this category
+			const counts = new Map<string, number>();
+			for (const p of projects) {
+				const tags = getTags(p);
+				for (const val of tags[cat.key]) {
+					counts.set(val, (counts.get(val) ?? 0) + 1);
+				}
+			}
+
+			// Skip empty categories (e.g., framework if none have it)
+			if (counts.size === 0) continue;
+
+			const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1]);
+
+			const row = document.createElement("div");
+			row.className = "filter-row";
+
+			const label = document.createElement("span");
+			label.className = "filter-label";
+			label.textContent = cat.label;
+			row.appendChild(label);
+
+			// "All" pill
+			const allBtn = document.createElement("button");
+			allBtn.type = "button";
+			allBtn.className = "filter-pill active";
+			allBtn.textContent = "All";
+			allBtn.addEventListener("click", () => {
+				activeFilters[cat.key].clear();
+				row.querySelectorAll(".filter-pill").forEach((p) => p.classList.remove("active"));
+				allBtn.classList.add("active");
+				renderGrid();
+			});
+			row.appendChild(allBtn);
+
+			for (const [value, count] of sorted) {
+				const btn = document.createElement("button");
+				btn.type = "button";
+				btn.className = "filter-pill";
+
+				if (cat.key === "language" && LANG_COLORS[value]) {
+					const dot = document.createElement("span");
+					dot.className = "pill-dot";
+					dot.style.background = LANG_COLORS[value];
+					btn.appendChild(dot);
+				}
+
+				btn.appendChild(document.createTextNode(value));
+
+				const countEl = document.createElement("span");
+				countEl.className = "pill-count";
+				countEl.textContent = String(count);
+				btn.appendChild(countEl);
+
+				btn.addEventListener("click", () => {
+					const set = activeFilters[cat.key];
+					if (set.has(value)) {
+						set.delete(value);
+						btn.classList.remove("active");
+					} else {
+						set.add(value);
+						btn.classList.add("active");
+					}
+
+					// Deactivate "All" if any specific filter is active, or reactivate if none
+					if (set.size === 0) {
+						allBtn.classList.add("active");
+					} else {
+						allBtn.classList.remove("active");
+					}
+
+					renderGrid();
+				});
+
+				row.appendChild(btn);
+			}
+
+			bar.appendChild(row);
+		}
+	}
+
+	function renderGrid() {
+		const grid = document.getElementById("projects-grid");
+		const countEl = document.getElementById("projects-count");
+		if (!grid) return;
+
+		grid.replaceChildren();
+
+		const filtered = allProjects.filter(matchesFilters);
+
+		if (countEl) countEl.textContent = `${filtered.length}`;
+
+		for (let i = 0; i < filtered.length; i++) {
+			grid.appendChild(createCard(filtered[i], i));
+		}
+
+		grid.querySelectorAll(".fade-in").forEach((el) => observer.observe(el));
+	}
+
+	async function loadProjects() {
+		const grid = document.getElementById("projects-grid");
+		if (!grid) return;
+
+		try {
+			const res = await fetch(PROJECTS_URL);
+			const data: { projects: Project[] } = await res.json();
+
+			allProjects = data.projects
+				.filter((p) => p.name !== "lucasilverentand" && !p.name.startsWith("."))
+				.sort((a, b) => {
+					const da = a.updated_at ? new Date(a.updated_at).getTime() : 0;
+					const db = b.updated_at ? new Date(b.updated_at).getTime() : 0;
+					return db - da;
+				});
+
+			buildFilterBar(allProjects);
+			renderGrid();
+		} catch {
+			const msg = document.createElement("p");
+			msg.style.color = "var(--color-text-3)";
+			msg.style.fontSize = "14px";
+			msg.textContent = "Failed to load projects.";
+			grid.appendChild(msg);
+		}
+	}
+
+	loadProjects();
+
 	const observer = new IntersectionObserver(
 		(entries) => {
 			for (const entry of entries) {

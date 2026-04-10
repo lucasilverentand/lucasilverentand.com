@@ -1,4 +1,6 @@
 ---
+import "../styles/global.css";
+
 interface Props {
 	title?: string;
 	description?: string;
@@ -46,7 +48,12 @@ const canonicalUrl = new URL(Astro.url.pathname, Astro.site).href;
 		/>
 	</head>
 	<body>
-		<button id="theme-toggle" type="button" aria-label="Toggle theme">
+		<button
+			id="theme-toggle"
+			type="button"
+			aria-label="Toggle theme"
+			class="fixed top-6 right-6 z-100 size-9 flex items-center justify-center bg-bg-2 border border-border rounded-[10px] cursor-pointer text-text-2 transition-[color,border-color] duration-150 hover:text-text-1 hover:border-border-2"
+		>
 			<svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 				<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
 			</svg>
@@ -57,132 +64,6 @@ const canonicalUrl = new URL(Astro.url.pathname, Astro.site).href;
 		<slot />
 	</body>
 </html>
-
-<style is:global>
-	:root {
-		--bg: #080808;
-		--bg-2: #0e0e0e;
-		--bg-3: #141414;
-		--border: #1e1e1e;
-		--border-2: #2a2a2a;
-		--text-1: #ededed;
-		--text-2: #999999;
-		--text-3: #555555;
-		--accent: #ff5c1a;
-		--accent-dim: rgba(255, 92, 26, 0.12);
-		--accent-glow: rgba(255, 92, 26, 0.25);
-
-		--font-display: "DM Serif Display", Georgia, serif;
-		--font-mono: "DM Mono", "Cascadia Code", "JetBrains Mono", monospace;
-		--font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-
-		--lang-swift: #ff453a;
-		--lang-rust: #e05a00;
-		--lang-ts: #3b82f6;
-		--lang-js: #eab308;
-		--lang-python: #4b91f7;
-
-		color-scheme: dark;
-	}
-
-	[data-theme="light"] {
-		--bg: #fafafa;
-		--bg-2: #f0f0f0;
-		--bg-3: #e8e8e8;
-		--border: #e0e0e0;
-		--border-2: #d0d0d0;
-		--text-1: #111111;
-		--text-2: #666666;
-		--text-3: #999999;
-		--accent: #e54d10;
-		--accent-dim: rgba(229, 77, 16, 0.08);
-		--accent-glow: rgba(229, 77, 16, 0.15);
-
-		color-scheme: light;
-	}
-
-	*, *::before, *::after {
-		box-sizing: border-box;
-		margin: 0;
-		padding: 0;
-	}
-
-	html {
-		font-size: 16px;
-		scroll-behavior: smooth;
-	}
-
-	body {
-		background-color: var(--bg);
-		color: var(--text-1);
-		font-family: var(--font-body);
-		line-height: 1.6;
-		-webkit-font-smoothing: antialiased;
-		-moz-osx-font-smoothing: grayscale;
-		overflow-x: clip;
-	}
-
-	::selection {
-		background: var(--accent);
-		color: #fff;
-	}
-
-	a {
-		color: inherit;
-		text-decoration: none;
-	}
-
-	img {
-		max-width: 100%;
-		display: block;
-	}
-
-	/* Scrollbar */
-	::-webkit-scrollbar {
-		width: 6px;
-	}
-	::-webkit-scrollbar-track {
-		background: var(--bg);
-	}
-	::-webkit-scrollbar-thumb {
-		background: var(--border-2);
-		border-radius: 3px;
-	}
-	::-webkit-scrollbar-thumb:hover {
-		background: var(--text-3);
-	}
-
-	/* Theme toggle */
-	#theme-toggle {
-		position: fixed;
-		top: 24px;
-		right: 24px;
-		z-index: 100;
-		width: 36px;
-		height: 36px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		background: var(--bg-2);
-		border: 1px solid var(--border);
-		border-radius: 10px;
-		cursor: pointer;
-		color: var(--text-2);
-		transition: color 0.15s, border-color 0.15s;
-	}
-	#theme-toggle:hover {
-		color: var(--text-1);
-		border-color: var(--border-2);
-	}
-	.icon-moon { display: none; }
-	[data-theme="light"] .icon-sun { display: none; }
-	[data-theme="light"] .icon-moon { display: block; }
-
-	/* Light-mode source badge wordmarks */
-	[data-theme="light"] img[src*="wordmark-white"] {
-		filter: invert(1);
-	}
-</style>
 
 <script>
 	document.getElementById('theme-toggle')?.addEventListener('click', () => {

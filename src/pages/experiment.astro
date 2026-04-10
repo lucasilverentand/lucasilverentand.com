@@ -4,23 +4,23 @@ import Footer from "../components/Footer.astro";
 ---
 
 <Layout title="Dithered Depth — Luca Silverentand" description="Interactive dithered portrait with AI depth estimation.">
-	<main class="experiment">
-		<div class="canvas-wrap">
-			<canvas id="c"></canvas>
-			<div id="overlay">
+	<main class="flex flex-col items-center px-6 pt-12 pb-20 min-h-[calc(100vh-52px-85px)]">
+		<div class="canvas-wrap relative w-[min(640px,88vw)] aspect-square rounded-[14px] overflow-hidden bg-bg border border-border">
+			<canvas id="c" class="w-full h-full block cursor-crosshair"></canvas>
+			<div id="overlay" class="absolute inset-0 flex flex-col items-center justify-center gap-5 bg-bg transition-opacity duration-800 z-2">
 				<div id="loader">
-					<p id="status">Drop a photo to begin</p>
-					<div class="bar" id="bar" hidden><div id="fill"></div></div>
+					<p id="status" class="font-mono text-[13px] text-text-2 text-center">Drop a photo to begin</p>
+					<div class="bar w-[220px] h-0.5 bg-border rounded-sm overflow-hidden" id="bar" hidden><div id="fill" class="h-full w-0 bg-accent transition-[width] duration-300"></div></div>
 				</div>
-				<label id="drop-zone">
-					<input type="file" accept="image/*" id="file" />
-					<span class="drop-label">Drop photo here or click to select</span>
+				<label id="drop-zone" class="cursor-pointer">
+					<input type="file" accept="image/*" id="file" class="hidden" />
+					<span class="block font-mono text-[13px] text-text-3 border border-dashed border-border-2 px-7 py-3.5 rounded-lg transition-[border-color,color] duration-150 hover:border-text-3 hover:text-text-2">Drop photo here or click to select</span>
 				</label>
 			</div>
 		</div>
-		<div class="info">
-			<h1>Dithered Depth</h1>
-			<p>
+		<div class="text-center mt-7 max-w-[460px]">
+			<h1 class="font-display text-[32px] font-normal mb-2">Dithered Depth</h1>
+			<p class="text-sm leading-relaxed text-text-3">
 				Bayer-matrix ordered dithering with AI depth estimation driving per-layer parallax.
 				Move your mouse across the portrait.
 			</p>
@@ -31,107 +31,16 @@ import Footer from "../components/Footer.astro";
 </Layout>
 
 <style>
-	.experiment {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		padding: 48px 24px 80px;
-		min-height: calc(100vh - 52px - 85px);
-	}
-	.canvas-wrap {
-		position: relative;
-		width: min(640px, 88vw);
-		aspect-ratio: 1;
-		border-radius: 14px;
-		overflow: hidden;
-		background: var(--bg);
-		border: 1px solid var(--border);
-	}
-	#c {
-		width: 100%;
-		height: 100%;
-		display: block;
-		cursor: crosshair;
-	}
-	#overlay {
-		position: absolute;
-		inset: 0;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		gap: 20px;
-		background: var(--bg);
-		transition: opacity 0.8s ease;
-		z-index: 2;
-	}
 	#overlay.done {
 		opacity: 0;
 		pointer-events: none;
 	}
-	#status {
-		font-family: var(--font-mono);
-		font-size: 13px;
-		color: var(--text-2);
-		text-align: center;
-	}
-	.bar {
-		width: 220px;
-		height: 2px;
-		background: var(--border);
-		border-radius: 1px;
-		overflow: hidden;
-	}
-	#fill {
-		height: 100%;
-		width: 0%;
-		background: var(--accent);
-		transition: width 0.3s ease;
-	}
-	#drop-zone {
-		cursor: pointer;
-	}
-	.drop-label {
-		display: block;
-		font-family: var(--font-mono);
-		font-size: 13px;
-		color: var(--text-3);
-		border: 1px dashed var(--border-2);
-		padding: 14px 28px;
-		border-radius: 8px;
-		transition: border-color 0.15s, color 0.15s;
-	}
-	.drop-label:hover {
-		border-color: var(--text-3);
-		color: var(--text-2);
-	}
-	#file {
-		display: none;
-	}
-	.info {
-		text-align: center;
-		margin-top: 28px;
-		max-width: 460px;
-	}
-	.info h1 {
-		font-family: var(--font-display);
-		font-size: 32px;
-		font-weight: 400;
-		margin-bottom: 8px;
-	}
-	.info p {
-		font-size: 14px;
-		line-height: 1.6;
-		color: var(--text-3);
-	}
-
-	/* Drag-over state */
 	.canvas-wrap.dragover #overlay {
-		background: var(--bg-2);
+		background: var(--color-bg-2);
 	}
 	.canvas-wrap.dragover .drop-label {
-		border-color: var(--accent);
-		color: var(--text-1);
+		border-color: var(--color-accent);
+		color: var(--color-text-1);
 	}
 </style>
 
@@ -179,7 +88,6 @@ import Footer from "../components/Footer.astro";
 		my = 0.5,
 		cx = 0.5,
 		cy = 0.5;
-	// Raw cursor in canvas-pixel coords for pond effect (-9999 when off canvas)
 	let cursorPx = -9999,
 		cursorPy = -9999;
 	let hovering = false;
@@ -269,7 +177,6 @@ import Footer from "../components/Footer.astro";
 				}
 			}
 
-			// Auto-detect orientation: center of selfie should be near
 			const mid =
 				depthBuf[Math.floor(size * 0.5) * size + Math.floor(size * 0.5)];
 			if (mid < 0.4) {
@@ -326,7 +233,6 @@ import Footer from "../components/Footer.astro";
 
 				if (brightness <= threshold) continue;
 
-				// Full color from source image
 				const r = px[i];
 				const g = px[i + 1];
 				const b = px[i + 2];
@@ -339,14 +245,12 @@ import Footer from "../components/Footer.astro";
 					depth: d,
 					layer,
 					color: `rgba(${r},${g},${b},${alpha})`,
-					// Pond displacement (smoothed per frame)
 					ox: 0,
 					oy: 0,
 				});
 			}
 		}
 
-		// Sort by layer so far dots render first (painter's order)
 		dots.sort((a, b) => a.layer - b.layer);
 		return dots;
 	}
@@ -363,7 +267,6 @@ import Footer from "../components/Footer.astro";
 		const pondR = POND_RADIUS * dpr;
 		const pondS = POND_STRENGTH * dpr;
 
-		// Lerp parallax cursor
 		cx += (mx - cx) * LERP;
 		cy += (my - cy) * LERP;
 
@@ -371,7 +274,6 @@ import Footer from "../components/Footer.astro";
 		const pdy = (cy - 0.5) * 2;
 		t += 0.006;
 
-		// Entrance fade
 		const age = (performance.now() - startMs) / 1000;
 		const fadeIn = Math.min(1, age / 1.2);
 
@@ -384,17 +286,14 @@ import Footer from "../components/Footer.astro";
 			const dot = allDots[i];
 			const d = dot.layer / (LAYERS - 1);
 
-			// Parallax offset
 			const plx = pdx * shift * d + Math.sin(t * 0.8 + d * 5) * idle * d;
 			const ply = pdy * shift * d + Math.cos(t * 0.5 + d * 3.7) * idle * d;
 
-			// Pond repulsion
 			const dotWorldX = dot.x + plx;
 			const dotWorldY = dot.y + ply;
 			const ddx = dotWorldX - cursorPx;
 			const ddy = dotWorldY - cursorPy;
 
-			// Quick bounding-box check before sqrt
 			if (
 				hovering &&
 				Math.abs(ddx) < pondR &&
@@ -417,11 +316,9 @@ import Footer from "../components/Footer.astro";
 				dot.oy *= POND_DECAY;
 			}
 
-			// Final position
 			const fx = dot.x + plx + dot.ox;
 			const fy = dot.y + ply + dot.oy;
 
-			// Batch fillStyle changes
 			if (dot.color !== prevColor) {
 				ctx.fillStyle = dot.color;
 				prevColor = dot.color;
@@ -463,7 +360,6 @@ import Footer from "../components/Footer.astro";
 		startMs = performance.now();
 		requestAnimationFrame(render);
 
-		// Mouse — track both normalized (parallax) and pixel coords (pond)
 		canvas.addEventListener("mousemove", (e) => {
 			const r = canvas.getBoundingClientRect();
 			const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -479,7 +375,6 @@ import Footer from "../components/Footer.astro";
 			hovering = false;
 		});
 
-		// Touch
 		canvas.addEventListener(
 			"touchmove",
 			(e) => {
@@ -501,7 +396,6 @@ import Footer from "../components/Footer.astro";
 			hovering = false;
 		});
 
-		// Gyroscope (no pond effect, just parallax)
 		if (window.DeviceOrientationEvent) {
 			window.addEventListener("deviceorientation", (e) => {
 				if (e.gamma != null) {
@@ -525,7 +419,6 @@ import Footer from "../components/Footer.astro";
 		handleFile(e.target.files?.[0]);
 	});
 
-	// Drag & drop
 	wrap.addEventListener("dragover", (e) => {
 		e.preventDefault();
 		wrap.classList.add("dragover");
@@ -537,7 +430,6 @@ import Footer from "../components/Footer.astro";
 		handleFile(e.dataTransfer.files?.[0]);
 	});
 
-	// Try auto-loading /me.jpg
 	loadImg("/me.jpg")
 		.then(process)
 		.catch(() => {

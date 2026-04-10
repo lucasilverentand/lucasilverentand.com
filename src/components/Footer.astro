@@ -1,46 +1,11 @@
-<footer>
-	<div class="wrap">
-		<span>Luca Silverentand &copy; {new Date().getFullYear()}</span>
-		<div class="footer-links">
-			<a href="/">Home</a>
-			<a href="/blog">My Writing</a>
-			<a href="https://github.com/lucasilverentand" target="_blank" rel="noopener">GitHub</a>
-			<a href="https://github.com/seventwo-studio" target="_blank" rel="noopener">SevenTwo Studio</a>
+<footer class="border-t border-border py-7">
+	<div class="max-w-[960px] mx-auto px-6 flex items-center justify-between max-sm:flex-col max-sm:gap-3 max-sm:items-start">
+		<span class="font-mono text-xs text-text-3">Luca Silverentand &copy; {new Date().getFullYear()}</span>
+		<div class="flex gap-5">
+			<a href="/" class="font-mono text-xs text-text-3 transition-colors duration-150 hover:text-text-1">Home</a>
+			<a href="/blog" class="font-mono text-xs text-text-3 transition-colors duration-150 hover:text-text-1">My Writing</a>
+			<a href="https://github.com/lucasilverentand" target="_blank" rel="noopener" class="font-mono text-xs text-text-3 transition-colors duration-150 hover:text-text-1">GitHub</a>
+			<a href="https://github.com/seventwo-studio" target="_blank" rel="noopener" class="font-mono text-xs text-text-3 transition-colors duration-150 hover:text-text-1">SevenTwo Studio</a>
 		</div>
 	</div>
 </footer>
-
-<style>
-	footer {
-		border-top: 1px solid var(--border);
-		padding: 28px 0;
-	}
-	footer .wrap {
-		max-width: 960px;
-		margin: 0 auto;
-		padding: 0 24px;
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-	}
-	footer span {
-		font-family: var(--font-mono);
-		font-size: 12px;
-		color: var(--text-3);
-	}
-	.footer-links {
-		display: flex;
-		gap: 20px;
-	}
-	.footer-links a {
-		font-family: var(--font-mono);
-		font-size: 12px;
-		color: var(--text-3);
-		transition: color 0.15s;
-	}
-	.footer-links a:hover { color: var(--text-1); }
-
-	@media (max-width: 520px) {
-		footer .wrap { flex-direction: column; gap: 12px; align-items: flex-start; }
-	}
-</style>

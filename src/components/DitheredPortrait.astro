@@ -9,23 +9,12 @@ const total = size + pad * 2;
 ---
 
 <div
-    class="dithered-portrait"
+    class="shrink-0"
     style={`width: ${total}px; height: ${total}px; margin: -${pad}px;`}
 >
-    <canvas id="portrait-canvas"></canvas>
+    <canvas id="portrait-canvas" class="w-full h-full block"></canvas>
     <input type="file" accept="image/*" id="portrait-file" hidden />
 </div>
-
-<style>
-    .dithered-portrait {
-        flex-shrink: 0;
-    }
-    #portrait-canvas {
-        width: 100%;
-        height: 100%;
-        display: block;
-    }
-</style>
 
 <script type="module">
     const SPACING = 1.5;

@@ -29,38 +29,41 @@ function postHref(post: (typeof posts)[number]) {
 	description="All of my writing in one place: all my articles, newsletter, and other published writing."
 >
 	<main>
-		<section class="blog-hero">
-			<div class="wrap">
-				<a href="/" class="back">&larr; Back to home</a>
-				<h1>My Writing</h1>
-				<p class="subtitle">All of my writing in one place: all my articles, newsletter, and other published writing.</p>
+		<section class="pt-25 pb-15">
+			<div class="max-w-[960px] mx-auto px-6">
+				<a href="/" class="inline-block font-mono text-[13px] text-text-3 mb-8 transition-colors duration-150 hover:text-text-1">&larr; Back to home</a>
+				<h1 class="font-display text-[clamp(40px,6vw,64px)] font-normal leading-none tracking-tight mb-4">My Writing</h1>
+				<p class="text-[17px] text-text-2 leading-relaxed">All of my writing in one place: all my articles, newsletter, and other published writing.</p>
 			</div>
 		</section>
 
-		<section class="posts">
-			<div class="wrap">
-				{posts.map((post) => (
+		<section class="pb-20">
+			<div class="max-w-[960px] mx-auto px-6">
+				{posts.map((post, i) => (
 					<a
 						href={postHref(post)}
-						class="post-card"
+						class:list={[
+							"block py-7 border-b border-border transition-opacity duration-150 hover:opacity-80",
+							i === 0 && "border-t",
+						]}
 						target={post.externalUrl ? "_blank" : undefined}
 						rel={post.externalUrl ? "noopener noreferrer" : undefined}
 					>
-						<div class="post-meta">
+						<div class="flex items-center flex-wrap gap-y-2 mb-2.5 min-h-3.5">
 							{post.source && (
 								<>
 									<SourceBadge source={post.source} />
-									<span class="separator">&middot;</span>
+									<span class="font-mono text-xs text-text-3 leading-none inline-flex items-center justify-center mx-2.5">&middot;</span>
 								</>
 							)}
-							<time datetime={post.date.toISOString()}>{formatDate(post.date)}</time>
+							<time datetime={post.date.toISOString()} class="font-mono text-xs text-text-3 leading-none inline-flex items-center">{formatDate(post.date)}</time>
 						</div>
-						<h2>{post.title}</h2>
-						<p>{post.description}</p>
+						<h2 class="font-display text-[26px] font-normal leading-snug mb-2">{post.title}</h2>
+						<p class="text-[15px] leading-relaxed text-text-2 max-w-[640px]">{post.description}</p>
 						{visibleTags(post).length > 0 && (
-							<div class="post-labels">
+							<div class="flex flex-wrap gap-2 mt-4 max-w-[720px] max-sm:gap-1.5">
 								{visibleTags(post).map((tag) => (
-									<span class="tag">{tag}</span>
+									<span class="font-mono text-[11px] max-sm:text-[10px] text-text-2 bg-bg-2 border border-border px-2.5 max-sm:px-2 py-1 rounded-full leading-tight break-all">{tag}</span>
 								))}
 							</div>
 						)}
@@ -68,7 +71,7 @@ function postHref(post: (typeof posts)[number]) {
 				))}
 
 				{posts.length === 0 && (
-					<p class="empty">No posts yet. Check back soon.</p>
+					<p class="text-[15px] text-text-3 py-10">No posts yet. Check back soon.</p>
 				)}
 			</div>
 		</section>
@@ -76,124 +79,3 @@ function postHref(post: (typeof posts)[number]) {
 
 	<Footer />
 </Layout>
-
-<style>
-	.wrap {
-		max-width: 960px;
-		margin: 0 auto;
-		padding: 0 24px;
-	}
-
-	/* ── Blog hero ── */
-	.blog-hero {
-		padding: 100px 0 60px;
-	}
-	.back {
-		display: inline-block;
-		font-family: var(--font-mono);
-		font-size: 13px;
-		color: var(--text-3);
-		margin-bottom: 32px;
-		transition: color 0.15s;
-	}
-	.back:hover {
-		color: var(--text-1);
-	}
-	.blog-hero h1 {
-		font-family: var(--font-display);
-		font-size: clamp(40px, 6vw, 64px);
-		font-weight: 400;
-		line-height: 1;
-		letter-spacing: -0.025em;
-		margin-bottom: 16px;
-	}
-	.subtitle {
-		font-size: 17px;
-		color: var(--text-2);
-		line-height: 1.6;
-	}
-
-	/* ── Posts ── */
-	.posts {
-		padding-bottom: 80px;
-	}
-	.post-card {
-		display: block;
-		padding: 28px 0;
-		border-bottom: 1px solid var(--border);
-		transition: opacity 0.15s;
-	}
-	.post-card:first-child {
-		border-top: 1px solid var(--border);
-	}
-	.post-card:hover {
-		opacity: 0.8;
-	}
-	.post-meta {
-		display: flex;
-		align-items: center;
-		flex-wrap: wrap;
-		row-gap: 8px;
-		column-gap: 0;
-		margin-bottom: 10px;
-		min-height: 14px;
-	}
-	.post-meta time,
-	.separator {
-		font-family: var(--font-mono);
-		font-size: 12px;
-		color: var(--text-3);
-		line-height: 1;
-		display: inline-flex;
-		align-items: center;
-	}
-	.separator {
-		justify-content: center;
-		margin: 0 10px;
-	}
-	.post-labels {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 8px;
-		margin-top: 16px;
-		max-width: 720px;
-	}
-	.tag {
-		font-family: var(--font-mono);
-		font-size: 11px;
-		color: var(--text-2);
-		background: var(--bg-2);
-		border: 1px solid var(--border);
-		padding: 5px 10px;
-		border-radius: 999px;
-		line-height: 1.2;
-		overflow-wrap: anywhere;
-	}
-	.post-card h2 {
-		font-family: var(--font-display);
-		font-size: 26px;
-		font-weight: 400;
-		line-height: 1.2;
-		margin-bottom: 8px;
-	}
-	.post-card p {
-		font-size: 15px;
-		line-height: 1.6;
-		color: var(--text-2);
-		max-width: 640px;
-	}
-	@media (max-width: 640px) {
-		.post-labels {
-			gap: 6px;
-		}
-		.tag {
-			font-size: 10px;
-			padding: 5px 9px;
-		}
-	}
-	.empty {
-		font-size: 15px;
-		color: var(--text-3);
-		padding: 40px 0;
-	}
-</style>

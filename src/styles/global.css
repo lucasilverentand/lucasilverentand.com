@@ -1,0 +1,205 @@
+@import "tailwindcss";
+
+@theme {
+	--font-display: "DM Serif Display", Georgia, serif;
+	--font-mono: "DM Mono", "Cascadia Code", "JetBrains Mono", monospace;
+	--font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+	--color-bg: #080808;
+	--color-bg-2: #0e0e0e;
+	--color-bg-3: #141414;
+	--color-border: #1e1e1e;
+	--color-border-2: #2a2a2a;
+	--color-text-1: #ededed;
+	--color-text-2: #999999;
+	--color-text-3: #555555;
+	--color-accent: #ff5c1a;
+	--color-accent-dim: rgba(255, 92, 26, 0.12);
+	--color-accent-glow: rgba(255, 92, 26, 0.25);
+
+	--animate-hero-in: hero-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+	--animate-hero-in-h1: hero-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both;
+	--animate-hero-in-sub: hero-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
+	--animate-hero-in-links: hero-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.25s both;
+
+	@keyframes hero-in {
+		from {
+			opacity: 0;
+			transform: translateY(24px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+}
+
+/* ── Light theme overrides ── */
+[data-theme="light"] {
+	--color-bg: #fafafa;
+	--color-bg-2: #f0f0f0;
+	--color-bg-3: #e8e8e8;
+	--color-border: #e0e0e0;
+	--color-border-2: #d0d0d0;
+	--color-text-1: #111111;
+	--color-text-2: #666666;
+	--color-text-3: #999999;
+	--color-accent: #e54d10;
+	--color-accent-dim: rgba(229, 77, 16, 0.08);
+	--color-accent-glow: rgba(229, 77, 16, 0.15);
+
+	color-scheme: light;
+}
+
+/* ── Base resets ── */
+@layer base {
+	:root {
+		color-scheme: dark;
+	}
+
+	html {
+		scroll-behavior: smooth;
+	}
+
+	body {
+		background-color: var(--color-bg);
+		color: var(--color-text-1);
+		font-family: var(--font-body);
+		line-height: 1.6;
+		-webkit-font-smoothing: antialiased;
+		-moz-osx-font-smoothing: grayscale;
+		overflow-x: clip;
+	}
+
+	::selection {
+		background: var(--color-accent);
+		color: #fff;
+	}
+
+	a {
+		color: inherit;
+		text-decoration: none;
+	}
+
+	img {
+		max-width: 100%;
+		display: block;
+	}
+
+	/* Scrollbar */
+	::-webkit-scrollbar {
+		width: 6px;
+	}
+	::-webkit-scrollbar-track {
+		background: var(--color-bg);
+	}
+	::-webkit-scrollbar-thumb {
+		background: var(--color-border-2);
+		border-radius: 3px;
+	}
+	::-webkit-scrollbar-thumb:hover {
+		background: var(--color-text-3);
+	}
+
+	/* Theme toggle icon switching */
+	.icon-moon {
+		display: none;
+	}
+	[data-theme="light"] .icon-sun {
+		display: none;
+	}
+	[data-theme="light"] .icon-moon {
+		display: block;
+	}
+
+	/* Light-mode source badge wordmarks */
+	[data-theme="light"] img[src*="wordmark-white"] {
+		filter: invert(1);
+	}
+}
+
+/* ── Prose (markdown content) ── */
+@layer components {
+	.prose h2 {
+		font-family: var(--font-display);
+		font-size: 28px;
+		font-weight: 400;
+		line-height: 1.2;
+		margin-top: 48px;
+		margin-bottom: 16px;
+	}
+	.prose h3 {
+		font-family: var(--font-display);
+		font-size: 22px;
+		font-weight: 400;
+		margin-top: 36px;
+		margin-bottom: 12px;
+	}
+	.prose p {
+		font-size: 16px;
+		line-height: 1.75;
+		color: var(--color-text-2);
+		margin-bottom: 20px;
+	}
+	.prose a {
+		color: var(--color-text-1);
+		text-decoration: underline;
+		text-decoration-color: var(--color-border-2);
+		text-underline-offset: 3px;
+		transition: text-decoration-color 0.15s;
+	}
+	.prose a:hover {
+		text-decoration-color: var(--color-text-2);
+	}
+	.prose strong {
+		color: var(--color-text-1);
+		font-weight: 600;
+	}
+	.prose ul,
+	.prose ol {
+		padding-left: 24px;
+		margin-bottom: 20px;
+	}
+	.prose li {
+		font-size: 16px;
+		line-height: 1.75;
+		color: var(--color-text-2);
+		margin-bottom: 6px;
+	}
+	.prose code {
+		font-family: var(--font-mono);
+		font-size: 14px;
+		background: var(--color-bg-3);
+		padding: 2px 6px;
+		border-radius: 4px;
+		color: var(--color-text-1);
+	}
+	.prose pre {
+		background: var(--color-bg-2);
+		border: 1px solid var(--color-border);
+		border-radius: 10px;
+		padding: 20px 24px;
+		overflow-x: auto;
+		margin-bottom: 24px;
+	}
+	.prose pre code {
+		background: none;
+		padding: 0;
+		font-size: 13px;
+		line-height: 1.7;
+	}
+	.prose blockquote {
+		border-left: 2px solid var(--color-border-2);
+		padding-left: 20px;
+		margin-bottom: 20px;
+	}
+	.prose blockquote p {
+		color: var(--color-text-3);
+		font-style: italic;
+	}
+	.prose hr {
+		border: none;
+		border-top: 1px solid var(--color-border);
+		margin: 40px 0;
+	}
+}

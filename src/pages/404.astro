@@ -5,65 +5,15 @@ import Footer from "../components/Footer.astro";
 
 <Layout title="Not Found — Luca Silverentand" description="This page doesn't exist.">
 	<main>
-		<section class="not-found">
-			<div class="wrap">
-				<span class="code">404</span>
-				<h1>Page not found</h1>
-				<p>The page you're looking for doesn't exist or has been moved.</p>
-				<a href="/" class="back-home">&larr; Back to home</a>
+		<section class="flex items-center justify-center min-h-[calc(100vh-52px-85px)] text-center">
+			<div class="max-w-[960px] mx-auto px-6">
+				<span class="inline-block font-mono text-[13px] font-medium uppercase tracking-widest text-accent bg-accent-dim px-2.5 py-1 rounded-md mb-5">404</span>
+				<h1 class="font-display text-[clamp(36px,6vw,56px)] font-normal leading-tight tracking-tight mb-3">Page not found</h1>
+				<p class="text-[17px] leading-relaxed text-text-2 mb-8">The page you're looking for doesn't exist or has been moved.</p>
+				<a href="/" class="font-mono text-[13px] text-text-3 transition-colors duration-150 hover:text-text-1">&larr; Back to home</a>
 			</div>
 		</section>
 	</main>
 
 	<Footer />
 </Layout>
-
-<style>
-	.wrap {
-		max-width: 960px;
-		margin: 0 auto;
-		padding: 0 24px;
-	}
-
-	.not-found {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		min-height: calc(100vh - 52px - 85px);
-		text-align: center;
-	}
-	.code {
-		font-family: var(--font-mono);
-		font-size: 13px;
-		font-weight: 500;
-		text-transform: uppercase;
-		letter-spacing: 0.08em;
-		color: var(--accent);
-		background: var(--accent-dim);
-		padding: 4px 10px;
-		border-radius: 6px;
-		display: inline-block;
-		margin-bottom: 20px;
-	}
-	h1 {
-		font-family: var(--font-display);
-		font-size: clamp(36px, 6vw, 56px);
-		font-weight: 400;
-		line-height: 1.1;
-		letter-spacing: -0.025em;
-		margin-bottom: 12px;
-	}
-	p {
-		font-size: 17px;
-		line-height: 1.6;
-		color: var(--text-2);
-		margin-bottom: 32px;
-	}
-	.back-home {
-		font-family: var(--font-mono);
-		font-size: 13px;
-		color: var(--text-3);
-		transition: color 0.15s;
-	}
-	.back-home:hover { color: var(--text-1); }
-</style>

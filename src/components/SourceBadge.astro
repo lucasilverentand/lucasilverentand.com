@@ -19,44 +19,12 @@ const sourceConfig = {
 };
 ---
 
-<span class="source-badge" data-source={normalizedSource} aria-label={sourceConfig.label} title={sourceConfig.label}>
+<span class="inline-flex items-center justify-center text-text-3 leading-none shrink-0 h-3.5 align-middle opacity-40" data-source={normalizedSource} aria-label={sourceConfig.label} title={sourceConfig.label}>
 	{normalizedSource === "medium" ? (
-		<img src="/medium-wordmark-white.svg" alt="" width="70" height="14" aria-hidden="true" />
+		<img src="/medium-wordmark-white.svg" alt="" width="70" height="14" aria-hidden="true" class="block h-full w-auto" />
 	) : normalizedSource === "substack" ? (
-		<img src="/substack-wordmark-white.svg" alt="" width="72" height="12" aria-hidden="true" />
+		<img src="/substack-wordmark-white.svg" alt="" width="72" height="12" aria-hidden="true" class="block h-full w-auto" />
 	) : (
-		<span class="source-dot" aria-hidden="true"></span>
+		<span class="size-[7px] rounded-full bg-text-1 shrink-0" aria-hidden="true"></span>
 	)}
 </span>
-
-<style>
-	.source-badge {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		color: var(--text-3);
-		line-height: 1;
-		flex: 0 0 auto;
-		height: 14px;
-		vertical-align: middle;
-		opacity: 0.4;
-	}
-
-	.source-badge svg {
-		display: block;
-	}
-
-	.source-badge img {
-		display: block;
-		height: 100%;
-		width: auto;
-	}
-
-	.source-dot {
-		width: 7px;
-		height: 7px;
-		border-radius: 999px;
-		background: var(--text-1);
-		flex: 0 0 auto;
-	}
-</style>

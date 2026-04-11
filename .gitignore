@@ -6,3 +6,8 @@ tmp/
 .env
 .env.*
 !.env.example
+
+# This project uses bun — keep npm/pnpm/yarn lockfiles out of tree.
+package-lock.json
+pnpm-lock.yaml
+yarn.lock

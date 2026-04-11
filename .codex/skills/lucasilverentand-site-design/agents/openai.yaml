@@ -1,4 +1,0 @@
-interface:
-  display_name: "Lucasilverentand Site Design"
-  short_description: "Preserve this site's design language"
-  default_prompt: "Use $lucasilverentand-site-design to design or restyle pages in this repo while preserving the site's current visual language."

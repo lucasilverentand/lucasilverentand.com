@@ -1,16 +1,45 @@
 {
-  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
-  "organizeImports": { "enabled": true },
-  "linter": {
-    "enabled": true,
-    "rules": { "recommended": true }
-  },
-  "formatter": {
-    "enabled": true,
-    "indentStyle": "tab",
-    "lineWidth": 100
-  },
-  "files": {
-    "ignore": ["dist/**", ".astro/**", "node_modules/**"]
-  }
+	"$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+	"organizeImports": { "enabled": true },
+	"files": {
+		"ignore": [
+			".astro/**",
+			".wrangler/**",
+			"dist/**",
+			"node_modules/**",
+			"public/**",
+			"tmp/**",
+			"bun.lock",
+			"package-lock.json",
+			"src/**/*.astro"
+		]
+	},
+	"formatter": {
+		"enabled": true,
+		"indentStyle": "tab",
+		"indentWidth": 2,
+		"lineWidth": 100,
+		"lineEnding": "lf"
+	},
+	"linter": {
+		"enabled": true,
+		"rules": { "recommended": true }
+	},
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "double",
+			"semicolons": "always",
+			"trailingCommas": "all",
+			"arrowParentheses": "always"
+		}
+	},
+	"json": {
+		"formatter": { "enabled": true, "trailingCommas": "none" },
+		"linter": { "enabled": true }
+	},
+	"css": {
+		"formatter": { "enabled": true, "quoteStyle": "double" },
+		"linter": { "enabled": true },
+		"parser": { "allowWrongLineComments": false }
+	}
 }

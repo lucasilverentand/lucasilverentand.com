@@ -1,29 +1,42 @@
 {
-  "name": "lucasilverentand-com",
-  "type": "module",
-  "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview",
-    "sync:articles": "node scripts/sync-articles.mjs",
-    "design:screenshot": "node scripts/capture-page.mjs",
-    "deploy": "astro build && wrangler deploy"
-  },
-  "dependencies": {
-    "@astrojs/sitemap": "^3.7.2",
-    "@iconify-json/simple-icons": "^1.2.77",
-    "@tailwindcss/vite": "^4.2.2",
-    "astro": "^5.18.1",
-    "astro-icon": "^1.1.5",
-    "tailwindcss": "^4.2.2"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
-    "playwright": "^1.59.1",
-    "wrangler": "^4.81.0"
-  },
-  "overrides": {
-    "vite": "^6.4.2",
-    "defu": "^6.1.5"
-  }
+	"name": "lucasilverentand-com",
+	"type": "module",
+	"scripts": {
+		"dev": "astro dev",
+		"build": "astro build",
+		"preview": "astro preview",
+		"sync:articles": "node scripts/sync-articles.mjs",
+		"design:screenshot": "node scripts/capture-page.mjs",
+		"deploy": "astro build && wrangler deploy",
+		"format": "biome format --write . && prettier --write .",
+		"format:check": "biome format . && prettier --check .",
+		"lint": "biome lint --write .",
+		"lint:check": "biome lint .",
+		"check:biome": "biome check .",
+		"check:prettier": "prettier --check .",
+		"check:astro": "astro check",
+		"check": "biome check . && prettier --check . && astro check",
+		"check:fix": "biome check --write . && prettier --write . && astro check"
+	},
+	"dependencies": {
+		"@astrojs/sitemap": "^3.7.2",
+		"@iconify-json/simple-icons": "^1.2.77",
+		"@tailwindcss/vite": "^4.2.2",
+		"astro": "^5.18.1",
+		"astro-icon": "^1.1.5",
+		"tailwindcss": "^4.2.2"
+	},
+	"devDependencies": {
+		"@astrojs/check": "^0.9.8",
+		"@biomejs/biome": "^1.9.4",
+		"playwright": "^1.59.1",
+		"prettier": "^3.8.2",
+		"prettier-plugin-astro": "^0.14.1",
+		"typescript": "^6.0.2",
+		"wrangler": "^4.81.0"
+	},
+	"overrides": {
+		"vite": "^6.4.2",
+		"defu": "^6.1.5"
+	}
 }

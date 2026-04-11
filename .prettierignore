@@ -1,0 +1,27 @@
+# Prettier only handles files biome can't (currently: .astro).
+# Everything else is owned by biome — ignore those extensions here.
+
+# Build artifacts
+dist
+.astro
+.wrangler
+node_modules
+tmp
+
+# Lockfiles & large generated files
+bun.lock
+package-lock.json
+
+# Static assets
+public
+
+# Biome-owned file types
+**/*.js
+**/*.mjs
+**/*.cjs
+**/*.ts
+**/*.tsx
+**/*.jsx
+**/*.json
+**/*.jsonc
+**/*.css

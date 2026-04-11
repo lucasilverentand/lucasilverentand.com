@@ -18,9 +18,6 @@
 	--color-accent-glow: rgba(255, 92, 26, 0.25);
 
 	--animate-hero-in: hero-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
-	--animate-hero-in-h1: hero-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both;
-	--animate-hero-in-sub: hero-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
-	--animate-hero-in-links: hero-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.25s both;
 
 	@keyframes hero-in {
 		from {
@@ -29,6 +26,19 @@
 		}
 		to {
 			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	@keyframes hero-letter-in {
+		from {
+			opacity: 0;
+			filter: blur(14px);
+			transform: translateY(0.18em);
+		}
+		to {
+			opacity: 1;
+			filter: blur(0);
 			transform: translateY(0);
 		}
 	}
@@ -100,21 +110,19 @@
 	::-webkit-scrollbar-thumb:hover {
 		background: var(--color-text-3);
 	}
+}
 
-	/* Theme toggle icon switching */
-	.icon-moon {
-		display: none;
+/* ── Shared scroll-reveal utility ── */
+@layer components {
+	.fade-in {
+		opacity: 0;
+		transform: translateY(16px);
+		transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s
+			cubic-bezier(0.16, 1, 0.3, 1);
 	}
-	[data-theme="light"] .icon-sun {
-		display: none;
-	}
-	[data-theme="light"] .icon-moon {
-		display: block;
-	}
-
-	/* Light-mode source badge wordmarks */
-	[data-theme="light"] img[src*="wordmark-white"] {
-		filter: invert(1);
+	.fade-in.visible {
+		opacity: 1;
+		transform: translateY(0);
 	}
 }
 

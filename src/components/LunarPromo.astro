@@ -1,0 +1,88 @@
+<section class="pb-5">
+	<div class="max-w-[960px] mx-auto px-6">
+		<a
+			href="https://lunar.lucasilverentand.com"
+			target="_blank"
+			rel="noopener"
+			class="lunar-promo group block relative rounded-[14px] overflow-hidden border border-border fade-in bg-black"
+		>
+			<div>
+				<img
+					src="https://raw.githubusercontent.com/lucasilverentand/artemis-lunar-wallpapers/main/thumbnails/earthrise-over-moon-limb.jpg"
+					alt=""
+					class="absolute bottom-0 right-0 h-full rotate-y-180"
+					loading="lazy"
+				/>
+				<div class="promo-body relative p-9 max-md:p-6">
+					<div class="flex items-center gap-3 mb-4">
+						<span
+							class="font-mono text-[11px] font-medium uppercase tracking-widest text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded-md"
+							>Free Wallpapers</span
+						>
+						<span class="font-mono text-xs text-neutral-500">NASA Artemis II</span>
+					</div>
+					<h2 class="font-display text-[40px] font-normal leading-tight mb-3 text-white">
+						Lunar Wallpapers
+					</h2>
+					<p class="text-[15px] leading-relaxed text-neutral-400 max-w-[480px] mb-6">
+						33 photos from the Artemis II lunar flyby, cropped into free wallpapers for every screen
+						&mdash; 5K, 4K, and phone sizes.
+					</p>
+					<span
+						class="inline-flex items-center gap-2 font-mono text-[13px] font-medium text-white bg-white/10 backdrop-blur-sm px-4.5 py-2.5 rounded-lg group-hover:bg-white/15 transition-colors duration-150"
+					>
+						Browse wallpapers
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							class="w-4 h-4 transition-transform duration-150 group-hover:translate-x-0.5"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke="currentColor"
+							stroke-width="2"
+						>
+							<path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path>
+						</svg>
+					</span>
+				</div>
+			</div>
+		</a>
+	</div>
+</section>
+
+<style>
+	/* Promo body cascade — children blur-fade in once container is in view. */
+	.lunar-promo .promo-body > * {
+		opacity: 0;
+		filter: blur(10px);
+		transform: translateY(0.3em);
+		transition:
+			opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+			filter 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+			transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+	}
+	.lunar-promo.visible .promo-body > * {
+		opacity: 1;
+		filter: blur(0);
+		transform: translateY(0);
+	}
+	.lunar-promo .promo-body > *:nth-child(1) {
+		transition-delay: 0.65s;
+	}
+	.lunar-promo .promo-body > *:nth-child(2) {
+		transition-delay: 0.74s;
+	}
+	.lunar-promo .promo-body > *:nth-child(3) {
+		transition-delay: 0.83s;
+	}
+	.lunar-promo .promo-body > *:nth-child(4) {
+		transition-delay: 0.92s;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.lunar-promo .promo-body > * {
+			transition: opacity 0.3s ease;
+			transform: none !important;
+			filter: none !important;
+		}
+	}
+</style>

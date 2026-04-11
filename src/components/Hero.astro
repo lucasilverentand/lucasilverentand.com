@@ -1,0 +1,116 @@
+---
+import { Icon } from "astro-icon/components";
+import DitheredPortrait from "./DitheredPortrait.astro";
+
+const firstName = "Luca";
+const lastName = "Silverentand";
+---
+
+<section class="pt-30 pb-20 max-md:pt-20 max-md:pb-15">
+	<div class="max-w-240 mx-auto px-6 animate-hero-in">
+		<div class="flex items-center gap-12 max-md:flex-col max-md:items-center max-md:gap-8">
+			<div class="shrink-0">
+				<DitheredPortrait size={260} />
+			</div>
+			<div class="min-w-0 max-md:text-center">
+				<h1
+					class="font-display text-[clamp(48px,8vw,88px)] font-normal leading-none tracking-tight mb-5"
+					aria-label={`${firstName} ${lastName}`}
+				>
+					{
+						firstName.split("").map((char, i) => (
+							<span class="hero-letter" style={`--i:${i}`} aria-hidden="true">
+								{char}
+							</span>
+						))
+					}
+					<br />
+					{
+						lastName.split("").map((char, i) => (
+							<span class="hero-letter" style={`--i:${i + firstName.length}`} aria-hidden="true">
+								{char}
+							</span>
+						))
+					}
+				</h1>
+				<p
+					class="hero-blur-in text-[17px] leading-relaxed text-text-2 max-w-130 mb-7"
+					style="--delay: 1.05s"
+				>
+					Self-taught developer with 15+ years of building apps, infrastructure, and everything in
+					between.<br />
+					Running <a
+						href="https://github.com/seventwo-studio"
+						target="_blank"
+						rel="noopener"
+						class="text-text-1 underline decoration-border-2 underline-offset-3 transition-[text-decoration-color] duration-150 hover:decoration-text-2"
+						>SevenTwo Studio</a
+					> from the Netherlands.
+				</p>
+				<div class="flex gap-3 max-md:justify-center">
+					<a
+						href="https://github.com/lucasilverentand"
+						target="_blank"
+						rel="noopener"
+						class="hero-blur-in inline-flex items-center gap-[7px] font-mono text-[13px] text-text-2 transition-colors duration-150 hover:text-text-1"
+						style="--delay: 1.35s"
+					>
+						<Icon name="simple-icons:github" size={16} />
+						GitHub
+					</a>
+					<a
+						href="https://threads.net/@luca.silverentand"
+						target="_blank"
+						rel="noopener"
+						class="hero-blur-in inline-flex items-center gap-[7px] font-mono text-[13px] text-text-2 transition-colors duration-150 hover:text-text-1"
+						style="--delay: 1.47s"
+					>
+						<Icon name="simple-icons:threads" size={16} />
+						Threads
+					</a>
+					<a
+						href="https://instagram.com/luca.silverentand"
+						target="_blank"
+						rel="noopener"
+						class="hero-blur-in inline-flex items-center gap-[7px] font-mono text-[13px] text-text-2 transition-colors duration-150 hover:text-text-1"
+						style="--delay: 1.59s"
+					>
+						<Icon name="simple-icons:instagram" size={16} />
+						Instagram
+					</a>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<style>
+	.hero-letter {
+		display: inline-block;
+		opacity: 0;
+		filter: blur(14px);
+		transform: translateY(0.18em);
+		will-change: filter, opacity, transform;
+		animation: hero-letter-in 0.75s cubic-bezier(0.16, 1, 0.3, 1) both;
+		animation-delay: calc(var(--i, 0) * 0.045s + 0.35s);
+	}
+
+	.hero-blur-in {
+		opacity: 0;
+		filter: blur(12px);
+		transform: translateY(0.4em);
+		will-change: filter, opacity, transform;
+		animation: hero-letter-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+		animation-delay: var(--delay, 0s);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.hero-letter,
+		.hero-blur-in {
+			animation: none;
+			opacity: 1;
+			filter: none;
+			transform: none;
+		}
+	}
+</style>

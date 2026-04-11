@@ -1,0 +1,542 @@
+---
+import type { WritingEntry } from "../lib/writing";
+
+interface Props {
+	posts: WritingEntry[];
+	totalCount: number;
+}
+
+const { posts, totalCount } = Astro.props;
+const remainingCount = totalCount - posts.length;
+
+function formatDate(date: Date) {
+	return date.toLocaleDateString("en-US", {
+		year: "numeric",
+		month: "short",
+		day: "numeric",
+	});
+}
+
+function postHref(post: WritingEntry) {
+	return post.externalUrl ?? `/blog/${post.id}`;
+}
+---
+
+{
+	posts.length > 0 && (
+		<section class="pb-18 overflow-hidden">
+			<div class="max-w-240 mx-auto px-6">
+				<div class="flex items-end justify-between gap-4 mb-6">
+					<h2 class="font-display text-[32px] font-normal">Latest Writing</h2>
+					<a
+						href="/blog"
+						class="font-mono text-[13px] text-text-3 transition-colors duration-150 hover:text-text-1 shrink-0 pb-1"
+					>
+						{remainingCount > 0 ? `View all (${totalCount})` : "View all"} &rarr;
+					</a>
+				</div>
+			</div>
+			<div class="writing-gallery-wrap relative">
+				<div class="writing-gallery">
+					<div class="writing-gallery-track">
+						{posts.map((post) => (
+							<a
+								href={postHref(post)}
+								class="writing-card fade-in"
+								target={post.externalUrl ? "_blank" : undefined}
+								rel={post.externalUrl ? "noopener noreferrer" : undefined}
+							>
+								{post.image && (
+									<div class="writing-card-cover">
+										<img
+											src={post.image}
+											alt=""
+											loading="lazy"
+											decoding="async"
+											draggable="false"
+										/>
+									</div>
+								)}
+								<div class="writing-card-body">
+									<div class="flex items-center justify-between gap-3">
+										<span class="font-mono text-[11px] text-text-3 uppercase tracking-wider truncate">
+											{post.source ?? "Essay"}
+										</span>
+										<time
+											datetime={post.date.toISOString()}
+											class="font-mono text-[11px] text-text-3 whitespace-nowrap shrink-0"
+										>
+											{formatDate(post.date)}
+										</time>
+									</div>
+									<h3 class="font-display text-[22px] leading-[1.15] text-text-1 mt-4 line-clamp-3">
+										{post.title}
+									</h3>
+									<p class="text-[13.5px] leading-relaxed text-text-2 mt-3 line-clamp-3">
+										{post.description}
+									</p>
+									<span class="font-mono text-[12px] text-text-2 mt-auto pt-5 inline-flex items-center gap-1.5">
+										Read {post.externalUrl ? "→↗" : "→"}
+									</span>
+								</div>
+							</a>
+						))}
+						<a href="/blog" class="writing-card writing-card-cta fade-in">
+							<div class="flex flex-col h-full justify-center items-center text-center gap-3">
+								<span class="font-mono text-[11px] text-text-3 uppercase tracking-wider">
+									The Archive
+								</span>
+								<p class="text-[14px] leading-relaxed text-text-2 max-w-[220px]">
+									Deep dives on Rust, Swift, and shipping side projects — no fluff.
+								</p>
+								<span class="font-mono text-[13px] text-text-1 mt-1">
+									{remainingCount > 0 ? `Browse all ${totalCount}` : "Browse all"} &rarr;
+								</span>
+							</div>
+						</a>
+					</div>
+				</div>
+			</div>
+			<div class="max-w-[960px] mx-auto px-6 mt-6">
+				<div class="writing-nav flex items-center justify-center gap-[18px]">
+					<button
+						type="button"
+						class="writing-arrow"
+						aria-label="Previous article"
+						data-writing-arrow="left"
+						disabled
+					>
+						<svg
+							width="18"
+							height="18"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							aria-hidden="true"
+						>
+							<path d="M15 18l-6-6 6-6" />
+						</svg>
+					</button>
+					<div
+						class="writing-dots flex items-center gap-2"
+						data-writing-dots
+						role="tablist"
+						aria-label="Writing gallery position"
+					/>
+					<button
+						type="button"
+						class="writing-arrow"
+						aria-label="Next article"
+						data-writing-arrow="right"
+					>
+						<svg
+							width="18"
+							height="18"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							aria-hidden="true"
+						>
+							<path d="M9 18l6-6-6-6" />
+						</svg>
+					</button>
+				</div>
+			</div>
+		</section>
+	)
+}
+
+<style>
+	/* Horizontal scroll with edge bleed and fade mask. */
+	.writing-gallery {
+		overflow-x: auto;
+		overflow-y: hidden;
+		scroll-behavior: smooth;
+		scrollbar-width: none;
+		-ms-overflow-style: none;
+		-webkit-overflow-scrolling: touch;
+		scroll-padding-inline: max(24px, calc((100vw - 960px) / 2 + 24px));
+		cursor: grab;
+		--edge: max(24px, calc((100vw - 960px) / 2 + 24px));
+		--fade: 96px;
+		-webkit-mask-image: linear-gradient(
+			to right,
+			transparent 0,
+			transparent calc(var(--edge) - var(--fade)),
+			black var(--edge),
+			black calc(100% - var(--edge)),
+			transparent calc(100% - var(--edge) + var(--fade)),
+			transparent 100%
+		);
+		mask-image: linear-gradient(
+			to right,
+			transparent 0,
+			transparent calc(var(--edge) - var(--fade)),
+			black var(--edge),
+			black calc(100% - var(--edge)),
+			transparent calc(100% - var(--edge) + var(--fade)),
+			transparent 100%
+		);
+	}
+	.writing-gallery[data-at-start="true"] {
+		-webkit-mask-image: linear-gradient(
+			to right,
+			black 0,
+			black calc(100% - var(--edge)),
+			transparent calc(100% - var(--edge) + var(--fade)),
+			transparent 100%
+		);
+		mask-image: linear-gradient(
+			to right,
+			black 0,
+			black calc(100% - var(--edge)),
+			transparent calc(100% - var(--edge) + var(--fade)),
+			transparent 100%
+		);
+	}
+	.writing-gallery[data-at-end="true"] {
+		-webkit-mask-image: linear-gradient(
+			to right,
+			transparent 0,
+			transparent calc(var(--edge) - var(--fade)),
+			black var(--edge),
+			black 100%
+		);
+		mask-image: linear-gradient(
+			to right,
+			transparent 0,
+			transparent calc(var(--edge) - var(--fade)),
+			black var(--edge),
+			black 100%
+		);
+	}
+	.writing-gallery[data-at-start="true"][data-at-end="true"] {
+		-webkit-mask-image: none;
+		mask-image: none;
+	}
+	.writing-gallery::-webkit-scrollbar {
+		display: none;
+	}
+	.writing-gallery.dragging {
+		cursor: grabbing;
+		scroll-behavior: auto;
+		user-select: none;
+	}
+	.writing-gallery.dragging :global(.writing-card) {
+		pointer-events: none;
+	}
+	.writing-gallery-track {
+		display: flex;
+		gap: 14px;
+		padding-inline: max(24px, calc((100vw - 960px) / 2 + 24px));
+		padding-block: 6px 20px;
+		width: max-content;
+	}
+
+	/* Writing card */
+	:global(.writing-card) {
+		display: flex;
+		flex-direction: column;
+		flex: 0 0 300px;
+		min-height: 220px;
+		border: 1px solid var(--color-border);
+		border-radius: 14px;
+		background: var(--color-bg-1);
+		transition:
+			border-color 0.2s,
+			background 0.2s,
+			box-shadow 0.2s,
+			transform 0.2s;
+		position: relative;
+		overflow: hidden;
+	}
+	:global(.writing-card-body) {
+		display: flex;
+		flex-direction: column;
+		flex: 1 1 auto;
+		padding: 20px 22px;
+	}
+	:global(.writing-card-cover) {
+		position: relative;
+		width: 100%;
+		aspect-ratio: 16 / 9;
+		overflow: hidden;
+		background: var(--color-bg-2);
+		border-bottom: 1px solid var(--color-border);
+	}
+	:global(.writing-card-cover) img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+		transition: transform 0.4s ease;
+		-webkit-user-drag: none;
+	}
+	:global(.writing-card):hover :global(.writing-card-cover) img {
+		transform: scale(1.04);
+	}
+	:global(.writing-card):hover {
+		border-color: var(--color-border-2);
+		background: var(--color-bg-2);
+		transform: translateY(-2px);
+		box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+	}
+	:global(.writing-card-cta) {
+		padding: 20px 22px;
+		background: var(--color-bg-2);
+		border-style: dashed;
+	}
+	:global(.writing-card-cta):hover {
+		background: var(--color-bg-3);
+	}
+	@media (max-width: 640px) {
+		:global(.writing-card) {
+			flex-basis: 82vw;
+			min-height: 200px;
+		}
+	}
+
+	/* Arrow + dot navigation */
+	.writing-arrow {
+		width: 38px;
+		height: 38px;
+		border-radius: 999px;
+		border: 1px solid var(--color-border);
+		background: var(--color-bg-1);
+		color: var(--color-text-1);
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+		transition:
+			opacity 0.2s,
+			background 0.2s,
+			border-color 0.2s,
+			transform 0.15s,
+			box-shadow 0.2s;
+	}
+	.writing-arrow:hover:not(:disabled) {
+		background: var(--color-bg-2);
+		border-color: var(--color-border-2);
+	}
+	.writing-arrow:active:not(:disabled) {
+		transform: scale(0.92);
+	}
+	.writing-arrow:disabled {
+		opacity: 0.35;
+		cursor: default;
+	}
+	.writing-dots :global(.writing-dot) {
+		width: 7px;
+		height: 7px;
+		border-radius: 999px;
+		background: var(--color-border-2, var(--color-border));
+		border: 0;
+		padding: 0;
+		cursor: pointer;
+		transition:
+			background 0.25s,
+			width 0.25s,
+			transform 0.25s;
+	}
+	.writing-dots :global(.writing-dot):hover {
+		background: var(--color-text-3);
+	}
+	.writing-dots :global(.writing-dot[aria-selected="true"]) {
+		background: var(--color-text-1);
+		width: 22px;
+	}
+</style>
+
+<script>
+	const gallery = document.querySelector<HTMLElement>(".writing-gallery");
+	if (gallery) {
+		let isDown = false;
+		let startX = 0;
+		let startScrollLeft = 0;
+		let hasDragged = false;
+		const DRAG_THRESHOLD = 6;
+
+		gallery.addEventListener("mousedown", (e) => {
+			if (e.button !== 0) return;
+			isDown = true;
+			hasDragged = false;
+			startX = e.pageX;
+			startScrollLeft = gallery.scrollLeft;
+		});
+
+		const endDrag = () => {
+			if (!isDown) return;
+			isDown = false;
+			const wasDragged = hasDragged;
+			requestAnimationFrame(() => {
+				gallery.classList.remove("dragging");
+				if (wasDragged) snapToNearest();
+			});
+		};
+
+		window.addEventListener("mouseup", endDrag);
+		gallery.addEventListener("mouseleave", endDrag);
+
+		window.addEventListener("mousemove", (e) => {
+			if (!isDown) return;
+			const dx = e.pageX - startX;
+			if (!hasDragged && Math.abs(dx) > DRAG_THRESHOLD) {
+				hasDragged = true;
+				gallery.classList.add("dragging");
+			}
+			if (hasDragged) {
+				e.preventDefault();
+				gallery.scrollLeft = startScrollLeft - dx;
+			}
+		});
+
+		// Suppress the click that follows a drag so cards don't navigate
+		gallery.addEventListener(
+			"click",
+			(e) => {
+				if (hasDragged) {
+					e.preventDefault();
+					e.stopPropagation();
+					hasDragged = false;
+				}
+			},
+			true,
+		);
+
+		gallery.addEventListener("dragstart", (e) => e.preventDefault());
+
+		const leftArrow = document.querySelector<HTMLButtonElement>('[data-writing-arrow="left"]');
+		const rightArrow = document.querySelector<HTMLButtonElement>('[data-writing-arrow="right"]');
+		const dotsContainer = document.querySelector<HTMLElement>("[data-writing-dots]");
+		const track = gallery.querySelector<HTMLElement>(".writing-gallery-track");
+
+		const adjustTrackEndPadding = () => {
+			if (!track) return;
+			const archive = gallery.querySelector<HTMLElement>(".writing-card-cta");
+			if (!archive) return;
+			track.style.paddingRight = "";
+			const basePadding = parseFloat(getComputedStyle(track).paddingRight) || 0;
+			const needed =
+				archive.offsetLeft + archive.offsetWidth / 2 + gallery.clientWidth / 2 - track.scrollWidth;
+			if (needed > 0) {
+				track.style.paddingRight = `${basePadding + needed}px`;
+			}
+		};
+
+		const getSnapPoints = (): number[] => {
+			const cards = gallery.querySelectorAll<HTMLElement>(".writing-card");
+			if (!cards.length) return [0];
+			const paddingLeft = track ? parseFloat(getComputedStyle(track).paddingLeft) || 0 : 0;
+			const max = Math.max(0, gallery.scrollWidth - gallery.clientWidth);
+			const points: number[] = [];
+			cards.forEach((card) => {
+				const isArchive = card.classList.contains("writing-card-cta");
+				const raw = isArchive
+					? card.offsetLeft + card.offsetWidth / 2 - gallery.clientWidth / 2
+					: card.offsetLeft - paddingLeft;
+				const pos = Math.max(0, Math.min(max, raw));
+				if (!points.length || Math.abs(points[points.length - 1] - pos) > 1) {
+					points.push(pos);
+				}
+			});
+			return points;
+		};
+
+		const findNearestIndex = (points: number[], x: number) => {
+			let idx = 0;
+			let best = Infinity;
+			for (let i = 0; i < points.length; i++) {
+				const d = Math.abs(points[i] - x);
+				if (d < best) {
+					best = d;
+					idx = i;
+				}
+			}
+			return idx;
+		};
+
+		const updateEdgeState = () => {
+			const max = gallery.scrollWidth - gallery.clientWidth;
+			const atStart = gallery.scrollLeft <= 1;
+			const atEnd = gallery.scrollLeft >= max - 1;
+			gallery.dataset.atStart = String(atStart);
+			gallery.dataset.atEnd = String(atEnd);
+			if (leftArrow) leftArrow.disabled = atStart;
+			if (rightArrow) rightArrow.disabled = atEnd;
+			if (dotsContainer) {
+				const points = getSnapPoints();
+				const activeIdx = findNearestIndex(points, gallery.scrollLeft);
+				dotsContainer.querySelectorAll<HTMLButtonElement>(".writing-dot").forEach((dot, i) => {
+					dot.setAttribute("aria-selected", i === activeIdx ? "true" : "false");
+				});
+			}
+		};
+
+		let animFrame: number | null = null;
+		const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+		const smoothScrollTo = (target: number, duration = 480) => {
+			if (animFrame !== null) cancelAnimationFrame(animFrame);
+			const start = gallery.scrollLeft;
+			const delta = target - start;
+			if (Math.abs(delta) < 1) return;
+			const t0 = performance.now();
+			const tick = (now: number) => {
+				const t = Math.min(1, (now - t0) / duration);
+				gallery.scrollLeft = start + delta * easeOutCubic(t);
+				if (t < 1) {
+					animFrame = requestAnimationFrame(tick);
+				} else {
+					animFrame = null;
+				}
+			};
+			animFrame = requestAnimationFrame(tick);
+		};
+
+		const snapToNearest = () => {
+			const points = getSnapPoints();
+			const idx = findNearestIndex(points, gallery.scrollLeft);
+			smoothScrollTo(points[idx]);
+		};
+
+		const snapStep = (dir: 1 | -1) => {
+			const points = getSnapPoints();
+			const idx = findNearestIndex(points, gallery.scrollLeft);
+			const next = Math.max(0, Math.min(points.length - 1, idx + dir));
+			smoothScrollTo(points[next]);
+		};
+
+		const buildDots = () => {
+			if (!dotsContainer) return;
+			const points = getSnapPoints();
+			dotsContainer.replaceChildren();
+			points.forEach((pos, i) => {
+				const dot = document.createElement("button");
+				dot.type = "button";
+				dot.className = "writing-dot";
+				dot.setAttribute("role", "tab");
+				dot.setAttribute("aria-label", `Go to article ${i + 1}`);
+				dot.setAttribute("aria-selected", i === 0 ? "true" : "false");
+				dot.addEventListener("click", () => smoothScrollTo(pos));
+				dotsContainer.appendChild(dot);
+			});
+		};
+
+		leftArrow?.addEventListener("click", () => snapStep(-1));
+		rightArrow?.addEventListener("click", () => snapStep(1));
+		gallery.addEventListener("scroll", updateEdgeState, { passive: true });
+		const refresh = () => {
+			adjustTrackEndPadding();
+			buildDots();
+			updateEdgeState();
+		};
+		window.addEventListener("resize", refresh);
+		refresh();
+	}
+</script>

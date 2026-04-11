@@ -4,7 +4,7 @@
 			href="https://lunar.lucasilverentand.com"
 			target="_blank"
 			rel="noopener"
-			class="lunar-promo group block relative rounded-[14px] overflow-hidden border border-border fade-in bg-black"
+			class="lunar-promo group block relative rounded-[14px] overflow-hidden border border-border bg-black"
 		>
 			<div>
 				<img
@@ -50,39 +50,70 @@
 </section>
 
 <style>
-	/* Promo body cascade — children blur-fade in once container is in view. */
+	/* Card container blurs in after the hero finishes. */
+	.lunar-promo {
+		opacity: 0;
+		filter: blur(14px);
+		transform: translateY(18px);
+		will-change: filter, opacity, transform;
+		animation: lunar-card-in 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
+		animation-delay: 1.2s;
+	}
+
+	/* Promo body cascade — children blur-fade in staggered after the card. */
 	.lunar-promo .promo-body > * {
 		opacity: 0;
 		filter: blur(10px);
 		transform: translateY(0.3em);
-		transition:
-			opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
-			filter 0.65s cubic-bezier(0.16, 1, 0.3, 1),
-			transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
-	}
-	.lunar-promo.visible .promo-body > * {
-		opacity: 1;
-		filter: blur(0);
-		transform: translateY(0);
+		will-change: filter, opacity, transform;
+		animation: lunar-child-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
 	}
 	.lunar-promo .promo-body > *:nth-child(1) {
-		transition-delay: 0.65s;
+		animation-delay: 1.45s;
 	}
 	.lunar-promo .promo-body > *:nth-child(2) {
-		transition-delay: 0.74s;
+		animation-delay: 1.54s;
 	}
 	.lunar-promo .promo-body > *:nth-child(3) {
-		transition-delay: 0.83s;
+		animation-delay: 1.63s;
 	}
 	.lunar-promo .promo-body > *:nth-child(4) {
-		transition-delay: 0.92s;
+		animation-delay: 1.72s;
+	}
+
+	@keyframes lunar-card-in {
+		from {
+			opacity: 0;
+			filter: blur(14px);
+			transform: translateY(18px);
+		}
+		to {
+			opacity: 1;
+			filter: blur(0);
+			transform: translateY(0);
+		}
+	}
+
+	@keyframes lunar-child-in {
+		from {
+			opacity: 0;
+			filter: blur(10px);
+			transform: translateY(0.3em);
+		}
+		to {
+			opacity: 1;
+			filter: blur(0);
+			transform: translateY(0);
+		}
 	}
 
 	@media (prefers-reduced-motion: reduce) {
+		.lunar-promo,
 		.lunar-promo .promo-body > * {
-			transition: opacity 0.3s ease;
-			transform: none !important;
-			filter: none !important;
+			animation: none;
+			opacity: 1;
+			filter: none;
+			transform: none;
 		}
 	}
 </style>

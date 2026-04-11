@@ -31,48 +31,73 @@ function postHref(post: (typeof posts)[number]) {
 	<main>
 		<section class="pt-25 pb-15">
 			<div class="max-w-[960px] mx-auto px-6">
-				<a href="/" class="inline-block font-mono text-[13px] text-text-3 mb-8 transition-colors duration-150 hover:text-text-1">&larr; Back to home</a>
-				<h1 class="font-display text-[clamp(40px,6vw,64px)] font-normal leading-none tracking-tight mb-4">My Writing</h1>
-				<p class="text-[17px] text-text-2 leading-relaxed">All of my writing in one place: all my articles, newsletter, and other published writing.</p>
+				<a
+					href="/"
+					class="inline-block font-mono text-[13px] text-text-3 mb-8 transition-colors duration-150 hover:text-text-1"
+					>&larr; Back to home</a
+				>
+				<h1
+					class="font-display text-[clamp(40px,6vw,64px)] font-normal leading-none tracking-tight mb-4"
+				>
+					My Writing
+				</h1>
+				<p class="text-[17px] text-text-2 leading-relaxed">
+					All of my writing in one place: all my articles, newsletter, and other published writing.
+				</p>
 			</div>
 		</section>
 
 		<section class="pb-20">
 			<div class="max-w-[960px] mx-auto px-6">
-				{posts.map((post, i) => (
-					<a
-						href={postHref(post)}
-						class:list={[
-							"block py-7 border-b border-border transition-opacity duration-150 hover:opacity-80",
-							i === 0 && "border-t",
-						]}
-						target={post.externalUrl ? "_blank" : undefined}
-						rel={post.externalUrl ? "noopener noreferrer" : undefined}
-					>
-						<div class="flex items-center flex-wrap gap-y-2 mb-2.5 min-h-3.5">
-							{post.source && (
-								<>
-									<SourceBadge source={post.source} />
-									<span class="font-mono text-xs text-text-3 leading-none inline-flex items-center justify-center mx-2.5">&middot;</span>
-								</>
-							)}
-							<time datetime={post.date.toISOString()} class="font-mono text-xs text-text-3 leading-none inline-flex items-center">{formatDate(post.date)}</time>
-						</div>
-						<h2 class="font-display text-[26px] font-normal leading-snug mb-2">{post.title}</h2>
-						<p class="text-[15px] leading-relaxed text-text-2 max-w-[640px]">{post.description}</p>
-						{visibleTags(post).length > 0 && (
-							<div class="flex flex-wrap gap-2 mt-4 max-w-[720px] max-sm:gap-1.5">
-								{visibleTags(post).map((tag) => (
-									<span class="font-mono text-[11px] max-sm:text-[10px] text-text-2 bg-bg-2 border border-border px-2.5 max-sm:px-2 py-1 rounded-full leading-tight break-all">{tag}</span>
-								))}
+				{
+					posts.map((post, i) => (
+						<a
+							href={postHref(post)}
+							class:list={[
+								"block py-7 border-b border-border transition-opacity duration-150 hover:opacity-80",
+								i === 0 && "border-t",
+							]}
+							target={post.externalUrl ? "_blank" : undefined}
+							rel={post.externalUrl ? "noopener noreferrer" : undefined}
+						>
+							<div class="flex items-center flex-wrap gap-y-2 mb-2.5 min-h-3.5">
+								{post.source && (
+									<>
+										<SourceBadge source={post.source} />
+										<span class="font-mono text-xs text-text-3 leading-none inline-flex items-center justify-center mx-2.5">
+											&middot;
+										</span>
+									</>
+								)}
+								<time
+									datetime={post.date.toISOString()}
+									class="font-mono text-xs text-text-3 leading-none inline-flex items-center"
+								>
+									{formatDate(post.date)}
+								</time>
 							</div>
-						)}
-					</a>
-				))}
+							<h2 class="font-display text-[26px] font-normal leading-snug mb-2">{post.title}</h2>
+							<p class="text-[15px] leading-relaxed text-text-2 max-w-[640px]">
+								{post.description}
+							</p>
+							{visibleTags(post).length > 0 && (
+								<div class="flex flex-wrap gap-2 mt-4 max-w-[720px] max-sm:gap-1.5">
+									{visibleTags(post).map((tag) => (
+										<span class="font-mono text-[11px] max-sm:text-[10px] text-text-2 bg-bg-2 border border-border px-2.5 max-sm:px-2 py-1 rounded-full leading-tight break-all">
+											{tag}
+										</span>
+									))}
+								</div>
+							)}
+						</a>
+					))
+				}
 
-				{posts.length === 0 && (
-					<p class="text-[15px] text-text-3 py-10">No posts yet. Check back soon.</p>
-				)}
+				{
+					posts.length === 0 && (
+						<p class="text-[15px] text-text-3 py-10">No posts yet. Check back soon.</p>
+					)
+				}
 			</div>
 		</section>
 	</main>

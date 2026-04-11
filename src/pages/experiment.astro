@@ -3,26 +3,41 @@ import Layout from "../layouts/Layout.astro";
 import Footer from "../components/Footer.astro";
 ---
 
-<Layout title="Dithered Depth — Luca Silverentand" description="Interactive dithered portrait with AI depth estimation.">
+<Layout
+	title="Dithered Depth — Luca Silverentand"
+	description="Interactive dithered portrait with AI depth estimation."
+>
 	<main class="flex flex-col items-center px-6 pt-12 pb-20 min-h-[calc(100vh-52px-85px)]">
-		<div class="canvas-wrap relative w-[min(640px,88vw)] aspect-square rounded-[14px] overflow-hidden bg-bg border border-border">
+		<div
+			class="canvas-wrap relative w-[min(640px,88vw)] aspect-square rounded-[14px] overflow-hidden bg-bg border border-border"
+		>
 			<canvas id="c" class="w-full h-full block cursor-crosshair"></canvas>
-			<div id="overlay" class="absolute inset-0 flex flex-col items-center justify-center gap-5 bg-bg transition-opacity duration-800 z-2">
+			<div
+				id="overlay"
+				class="absolute inset-0 flex flex-col items-center justify-center gap-5 bg-bg transition-opacity duration-800 z-2"
+			>
 				<div id="loader">
-					<p id="status" class="font-mono text-[13px] text-text-2 text-center">Drop a photo to begin</p>
-					<div class="bar w-[220px] h-0.5 bg-border rounded-sm overflow-hidden" id="bar" hidden><div id="fill" class="h-full w-0 bg-accent transition-[width] duration-300"></div></div>
+					<p id="status" class="font-mono text-[13px] text-text-2 text-center">
+						Drop a photo to begin
+					</p>
+					<div class="bar w-[220px] h-0.5 bg-border rounded-sm overflow-hidden" id="bar" hidden>
+						<div id="fill" class="h-full w-0 bg-accent transition-[width] duration-300"></div>
+					</div>
 				</div>
 				<label id="drop-zone" class="cursor-pointer">
 					<input type="file" accept="image/*" id="file" class="hidden" />
-					<span class="block font-mono text-[13px] text-text-3 border border-dashed border-border-2 px-7 py-3.5 rounded-lg transition-[border-color,color] duration-150 hover:border-text-3 hover:text-text-2">Drop photo here or click to select</span>
+					<span
+						class="block font-mono text-[13px] text-text-3 border border-dashed border-border-2 px-7 py-3.5 rounded-lg transition-[border-color,color] duration-150 hover:border-text-3 hover:text-text-2"
+						>Drop photo here or click to select</span
+					>
 				</label>
 			</div>
 		</div>
 		<div class="text-center mt-7 max-w-[460px]">
 			<h1 class="font-display text-[32px] font-normal mb-2">Dithered Depth</h1>
 			<p class="text-sm leading-relaxed text-text-3">
-				Bayer-matrix ordered dithering with AI depth estimation driving per-layer parallax.
-				Move your mouse across the portrait.
+				Bayer-matrix ordered dithering with AI depth estimation driving per-layer parallax. Move
+				your mouse across the portrait.
 			</p>
 		</div>
 	</main>
@@ -132,27 +147,22 @@ import Footer from "../components/Footer.astro";
 		let depthBuf;
 
 		try {
-			const { pipeline, env } = await import(
-				"https://cdn.jsdelivr.net/npm/@huggingface/transformers@3"
-			);
+			const { pipeline, env } =
+				await import("https://cdn.jsdelivr.net/npm/@huggingface/transformers@3");
 			env.allowLocalModels = false;
 
 			let last = 8;
-			const pipe = await pipeline(
-				"depth-estimation",
-				"onnx-community/depth-anything-v2-small",
-				{
-					progress_callback: (p) => {
-						if (p.status === "progress" && p.progress != null) {
-							const pct = 8 + p.progress * 0.6;
-							if (pct > last) {
-								last = pct;
-								setProgress(pct);
-							}
+			const pipe = await pipeline("depth-estimation", "onnx-community/depth-anything-v2-small", {
+				progress_callback: (p) => {
+					if (p.status === "progress" && p.progress != null) {
+						const pct = 8 + p.progress * 0.6;
+						if (pct > last) {
+							last = pct;
+							setProgress(pct);
 						}
-					},
+					}
 				},
-			);
+			});
 
 			setStatus("Estimating depth…");
 			setProgress(72);
@@ -172,16 +182,13 @@ import Footer from "../components/Footer.astro";
 				for (let x = 0; x < size; x++) {
 					const sx = Math.floor((x / size) * depth.width);
 					const sy = Math.floor((y / size) * depth.height);
-					depthBuf[y * size + x] =
-						depth.data[(sy * depth.width + sx) * ch] / 255;
+					depthBuf[y * size + x] = depth.data[(sy * depth.width + sx) * ch] / 255;
 				}
 			}
 
-			const mid =
-				depthBuf[Math.floor(size * 0.5) * size + Math.floor(size * 0.5)];
+			const mid = depthBuf[Math.floor(size * 0.5) * size + Math.floor(size * 0.5)];
 			if (mid < 0.4) {
-				for (let i = 0; i < depthBuf.length; i++)
-					depthBuf[i] = 1 - depthBuf[i];
+				for (let i = 0; i < depthBuf.length; i++) depthBuf[i] = 1 - depthBuf[i];
 			}
 		} catch (err) {
 			console.warn("Depth AI failed, using luminance fallback:", err);
@@ -192,16 +199,11 @@ import Footer from "../components/Footer.astro";
 			for (let y = 0; y < size; y++) {
 				for (let x = 0; x < size; x++) {
 					const i = (y * size + x) * 4;
-					const lum =
-						(0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2]) /
-						255;
+					const lum = (0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2]) / 255;
 					const cx2 = x / size - 0.5,
 						cy2 = y / size - 0.5;
 					const dist = Math.sqrt(cx2 * cx2 + cy2 * cy2);
-					depthBuf[y * size + x] = Math.min(
-						1,
-						Math.max(0, lum * 0.4 + (1 - dist * 1.4) * 0.6),
-					);
+					depthBuf[y * size + x] = Math.min(1, Math.max(0, lum * 0.4 + (1 - dist * 1.4) * 0.6));
 				}
 			}
 		}
@@ -221,9 +223,7 @@ import Footer from "../components/Footer.astro";
 				const i = (y * size + x) * 4;
 				if (px[i + 3] < 128) continue;
 
-				const lum =
-					(0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2]) /
-					255;
+				const lum = (0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2]) / 255;
 				const brightness = Math.pow(lum, GAMMA);
 				const d = depthBuf[y * size + x];
 
@@ -294,15 +294,10 @@ import Footer from "../components/Footer.astro";
 			const ddx = dotWorldX - cursorPx;
 			const ddy = dotWorldY - cursorPy;
 
-			if (
-				hovering &&
-				Math.abs(ddx) < pondR &&
-				Math.abs(ddy) < pondR
-			) {
+			if (hovering && Math.abs(ddx) < pondR && Math.abs(ddy) < pondR) {
 				const dist = Math.sqrt(ddx * ddx + ddy * ddy);
 				if (dist < pondR && dist > 0.1) {
-					const force =
-						((1 - dist / pondR) ** 2) * pondS * (0.6 + dot.depth * 0.4);
+					const force = (1 - dist / pondR) ** 2 * pondS * (0.6 + dot.depth * 0.4);
 					const tx = (ddx / dist) * force;
 					const ty = (ddy / dist) * force;
 					dot.ox += (tx - dot.ox) * POND_SPRING;
@@ -365,8 +360,8 @@ import Footer from "../components/Footer.astro";
 			const dpr = Math.min(window.devicePixelRatio || 1, 2);
 			mx = (e.clientX - r.left) / r.width;
 			my = (e.clientY - r.top) / r.height;
-			cursorPx = (e.clientX - r.left) / r.width * canvas.width;
-			cursorPy = (e.clientY - r.top) / r.height * canvas.height;
+			cursorPx = ((e.clientX - r.left) / r.width) * canvas.width;
+			cursorPy = ((e.clientY - r.top) / r.height) * canvas.height;
 			hovering = true;
 		});
 		canvas.addEventListener("mouseleave", () => {
@@ -400,9 +395,7 @@ import Footer from "../components/Footer.astro";
 			window.addEventListener("deviceorientation", (e) => {
 				if (e.gamma != null) {
 					mx = 0.5 + Math.max(-1, Math.min(1, e.gamma / 30)) * 0.4;
-					my =
-						0.5 +
-						Math.max(-1, Math.min(1, (e.beta - 50) / 30)) * 0.4;
+					my = 0.5 + Math.max(-1, Math.min(1, (e.beta - 50) / 30)) * 0.4;
 				}
 			});
 		}

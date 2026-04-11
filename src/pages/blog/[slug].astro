@@ -27,40 +27,76 @@ const visibleTags = post.data.tags.filter(
 	<main>
 		<article>
 			<div class="max-w-[720px] mx-auto px-6">
-				<a href="/blog" class="inline-block font-mono text-[13px] text-text-3 mt-12 mb-10 transition-colors duration-150 hover:text-text-1">&larr; Back to my writing</a>
+				<a
+					href="/blog"
+					class="inline-block font-mono text-[13px] text-text-3 mt-12 mb-10 transition-colors duration-150 hover:text-text-1"
+					>&larr; Back to my writing</a
+				>
 
 				<header class="mb-12">
 					<div class="flex items-center flex-wrap gap-y-2 mb-4.5 min-h-3.5">
-						{post.data.source && (
-							<>
-								<SourceBadge source={post.data.source} />
-								<span class="font-mono text-[13px] text-text-3 leading-none inline-flex items-center justify-center mx-3">&middot;</span>
-							</>
-						)}
-						<time datetime={post.data.date.toISOString()} class="font-mono text-[13px] text-text-3 leading-none inline-flex items-center">{formatDate(post.data.date)}</time>
-						<span class="font-mono text-[13px] text-text-3 leading-none inline-flex items-center justify-center mx-3">&middot;</span>
-						{post.data.imported ? (
-							<span class="font-mono text-[13px] text-text-3 leading-none inline-flex items-center">Imported article</span>
-						) : (
-							<span class="font-mono text-[13px] text-text-3 leading-none inline-flex items-center">{readingTime} min read</span>
-						)}
+						{
+							post.data.source && (
+								<>
+									<SourceBadge source={post.data.source} />
+									<span class="font-mono text-[13px] text-text-3 leading-none inline-flex items-center justify-center mx-3">
+										&middot;
+									</span>
+								</>
+							)
+						}
+						<time
+							datetime={post.data.date.toISOString()}
+							class="font-mono text-[13px] text-text-3 leading-none inline-flex items-center"
+							>{formatDate(post.data.date)}</time
+						>
+						<span
+							class="font-mono text-[13px] text-text-3 leading-none inline-flex items-center justify-center mx-3"
+							>&middot;</span
+						>
+						{
+							post.data.imported ? (
+								<span class="font-mono text-[13px] text-text-3 leading-none inline-flex items-center">
+									Imported article
+								</span>
+							) : (
+								<span class="font-mono text-[13px] text-text-3 leading-none inline-flex items-center">
+									{readingTime} min read
+								</span>
+							)
+						}
 					</div>
-					<h1 class="font-display text-[clamp(32px,5vw,48px)] font-normal leading-tight tracking-tight mb-4">{post.data.title}</h1>
+					<h1
+						class="font-display text-[clamp(32px,5vw,48px)] font-normal leading-tight tracking-tight mb-4"
+					>
+						{post.data.title}
+					</h1>
 					<p class="text-[17px] leading-relaxed text-text-2">{post.data.description}</p>
-					{visibleTags.length > 0 && (
-						<div class="flex flex-wrap gap-2 mt-4.5">
-							{visibleTags.map((tag) => (
-								<span class="font-mono text-[11px] text-text-2 bg-bg-2 border border-border px-2.5 py-1 rounded-full leading-tight break-all">{tag}</span>
-							))}
-						</div>
-					)}
-					{post.data.externalUrl && (
-						<p class="mt-4.5">
-							<a href={post.data.externalUrl} target="_blank" rel="noopener noreferrer" class="font-mono text-[13px] text-text-1 no-underline border-b border-border-2 pb-0.5 hover:border-text-2">
-								Read the full article &rarr;
-							</a>
-						</p>
-					)}
+					{
+						visibleTags.length > 0 && (
+							<div class="flex flex-wrap gap-2 mt-4.5">
+								{visibleTags.map((tag) => (
+									<span class="font-mono text-[11px] text-text-2 bg-bg-2 border border-border px-2.5 py-1 rounded-full leading-tight break-all">
+										{tag}
+									</span>
+								))}
+							</div>
+						)
+					}
+					{
+						post.data.externalUrl && (
+							<p class="mt-4.5">
+								<a
+									href={post.data.externalUrl}
+									target="_blank"
+									rel="noopener noreferrer"
+									class="font-mono text-[13px] text-text-1 no-underline border-b border-border-2 pb-0.5 hover:border-text-2"
+								>
+									Read the full article &rarr;
+								</a>
+							</p>
+						)
+					}
 				</header>
 
 				<div class="prose pb-20">

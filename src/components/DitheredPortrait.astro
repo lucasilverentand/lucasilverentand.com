@@ -1,6 +1,6 @@
 ---
 interface Props {
-    size?: number;
+	size?: number;
 }
 
 const { size = 280 } = Astro.props;
@@ -8,468 +8,539 @@ const pad = 40;
 const total = size + pad * 2;
 ---
 
-<div
-    class="shrink-0"
-    style={`width: ${total}px; height: ${total}px; margin: -${pad}px;`}
->
-    <canvas id="portrait-canvas" class="w-full h-full block"></canvas>
-    <input type="file" accept="image/*" id="portrait-file" hidden />
+<div class="shrink-0" style={`width: ${total}px; height: ${total}px; margin: -${pad}px;`}>
+	<canvas id="portrait-canvas" class="w-full h-full block"></canvas>
+	<input type="file" accept="image/*" id="portrait-file" hidden />
 </div>
 
 <script type="module">
-    const SPACING = 1.5;
-    const DOT = 1.2;
-    const GAMMA = 0.398;
-    const SAT_BOOST = 1.02;
-    const BRIGHTNESS_LIFT = 1.2;
-    const HIGHLIGHT_MIX = 0;
-    const SWIRL_AMP = 3.5;
-    const SWIRL_SPEED = 0.25;
-    const POND_RADIUS = 80;
-    const POND_STRENGTH = 45;
-    const POND_SPRING = 0.12;
-    const POND_DECAY = 0.86;
-    const CORNER_RADIUS = 32;
-    const RIPPLE_SPEED = 0.3;
-    const RIPPLE_WIDTH = 45;
-    const RIPPLE_STRENGTH = 32;
-    const RIPPLE_LIFE = 3500; // ms
-    const RANDOM_RIPPLE_MIN_GAP = 3200;
-    const RANDOM_RIPPLE_MAX_GAP = 7800;
+	const SPACING = 1.5;
+	const DOT = 1.2;
+	const GAMMA = 0.398;
+	const SAT_BOOST = 1.02;
+	const BRIGHTNESS_LIFT = 1.2;
+	const HIGHLIGHT_MIX = 0;
+	const SWIRL_AMP = 3.5;
+	const SWIRL_SPEED = 0.25;
+	const POND_RADIUS = 80;
+	const POND_STRENGTH = 45;
+	const POND_SPRING = 0.12;
+	const POND_DECAY = 0.86;
+	const CORNER_RADIUS = 32;
+	const RIPPLE_SPEED = 0.3;
+	const RIPPLE_WIDTH = 45;
+	const RIPPLE_STRENGTH = 32;
+	const RIPPLE_LIFE = 3500; // ms
+	const RANDOM_RIPPLE_MIN_GAP = 3200;
+	const RANDOM_RIPPLE_MAX_GAP = 7800;
+	const TWO_PI = Math.PI * 2;
+	// Entry animation: pure staggered fade, inside-out
+	const ENTRY_FADE = 0.9; // seconds per dot from invisible → visible
+	const ENTRY_MAX_DELAY = 0.95; // seconds until the last (outermost) dot starts
 
-    const BAYER = [
-        [0, 32, 8, 40, 2, 34, 10, 42],
-        [48, 16, 56, 24, 50, 18, 58, 26],
-        [12, 44, 4, 36, 14, 46, 6, 38],
-        [60, 28, 52, 20, 62, 30, 54, 22],
-        [3, 35, 11, 43, 1, 33, 9, 41],
-        [51, 19, 59, 27, 49, 17, 57, 25],
-        [15, 47, 7, 39, 13, 45, 5, 37],
-        [63, 31, 55, 23, 61, 29, 53, 21],
-    ].map((r) => r.map((v) => v / 64));
+	const BAYER = [
+		[0, 32, 8, 40, 2, 34, 10, 42],
+		[48, 16, 56, 24, 50, 18, 58, 26],
+		[12, 44, 4, 36, 14, 46, 6, 38],
+		[60, 28, 52, 20, 62, 30, 54, 22],
+		[3, 35, 11, 43, 1, 33, 9, 41],
+		[51, 19, 59, 27, 49, 17, 57, 25],
+		[15, 47, 7, 39, 13, 45, 5, 37],
+		[63, 31, 55, 23, 61, 29, 53, 21],
+	].map((r) => r.map((v) => v / 64));
 
-    const canvas = document.getElementById("portrait-canvas");
-    const ctx = canvas.getContext("2d");
-    const wrap = canvas.parentElement;
-    const fileInput = document.getElementById("portrait-file");
+	const canvas = document.getElementById("portrait-canvas");
+	const ctx = canvas.getContext("2d");
+	const wrap = canvas.parentElement;
+	const fileInput = document.getElementById("portrait-file");
 
-    let allDots = [];
-    let dotSize = 2;
-    let padPx = 0;
-    let cursorPx = -9999;
-    let cursorPy = -9999;
-    let hovering = false;
-    let active = false;
-    let startMs = 0;
-    let ripples = [];
-    let t = 0;
-    let nextRandomRippleMs = 0;
-    let darkSprite = null;
+	let allDots = [];
+	let dotSize = 2;
+	let padPx = 0;
+	let cursorPx = -9999;
+	let cursorPy = -9999;
+	let hovering = false;
+	let active = false;
+	let startMs = 0;
+	let ripples = [];
+	let t = 0;
+	let nextRandomRippleMs = 0;
+	let darkSprite = null;
+	let lastIsLight = null;
+	let entryDone = false;
 
-    function scheduleNextRandomRipple(now) {
-        return (
-            now +
-            RANDOM_RIPPLE_MIN_GAP +
-            Math.random() * (RANDOM_RIPPLE_MAX_GAP - RANDOM_RIPPLE_MIN_GAP)
-        );
-    }
+	// Invalidate dark sprite when theme changes
+	if (typeof MutationObserver !== "undefined") {
+		const themeObserver = new MutationObserver(() => {
+			darkSprite = null;
+		});
+		themeObserver.observe(document.documentElement, {
+			attributes: true,
+			attributeFilter: ["data-theme"],
+		});
+	}
 
-    function loadImg(src) {
-        return new Promise((res, rej) => {
-            const img = new Image();
-            img.crossOrigin = "anonymous";
-            img.onload = () => res(img);
-            img.onerror = rej;
-            img.src = src;
-        });
-    }
+	function scheduleNextRandomRipple(now) {
+		return (
+			now + RANDOM_RIPPLE_MIN_GAP + Math.random() * (RANDOM_RIPPLE_MAX_GAP - RANDOM_RIPPLE_MIN_GAP)
+		);
+	}
 
-    function samplePixels(img, size) {
-        const c = document.createElement("canvas");
-        c.width = size;
-        c.height = size;
-        const x = c.getContext("2d");
-        const scale = Math.max(size / img.width, size / img.height);
-        const w = img.width * scale;
-        const h = img.height * scale;
-        x.drawImage(img, (size - w) / 2, (size - h) / 2, w, h);
-        return x.getImageData(0, 0, size, size).data;
-    }
+	function loadImg(src) {
+		return new Promise((res, rej) => {
+			const img = new Image();
+			img.crossOrigin = "anonymous";
+			img.onload = () => res(img);
+			img.onerror = rej;
+			img.src = src;
+		});
+	}
 
-    function boostColor(r, g, b) {
-        r = Math.min(255, r * BRIGHTNESS_LIFT);
-        g = Math.min(255, g * BRIGHTNESS_LIFT);
-        b = Math.min(255, b * BRIGHTNESS_LIFT);
-        const avg = (r + g + b) / 3;
-        return [
-            Math.min(255, Math.max(0, Math.round(avg + (r - avg) * SAT_BOOST))),
-            Math.min(255, Math.max(0, Math.round(avg + (g - avg) * SAT_BOOST))),
-            Math.min(255, Math.max(0, Math.round(avg + (b - avg) * SAT_BOOST))),
-        ];
-    }
+	function samplePixels(img, size) {
+		const c = document.createElement("canvas");
+		c.width = size;
+		c.height = size;
+		const x = c.getContext("2d");
+		const scale = Math.max(size / img.width, size / img.height);
+		const w = img.width * scale;
+		const h = img.height * scale;
+		x.drawImage(img, (size - w) / 2, (size - h) / 2, w, h);
+		return x.getImageData(0, 0, size, size).data;
+	}
 
-    // Check if a point is inside the rounded rect (for masking dots to shape)
-    function inRoundedRect(x, y, pad, imgSize, radius) {
-        const lx = x - pad;
-        const ly = y - pad;
-        if (lx < 0 || ly < 0 || lx >= imgSize || ly >= imgSize) return false;
-        // Check corners
-        if (lx < radius && ly < radius) {
-            const dx = radius - lx,
-                dy = radius - ly;
-            return dx * dx + dy * dy <= radius * radius;
-        }
-        if (lx > imgSize - radius && ly < radius) {
-            const dx = lx - (imgSize - radius),
-                dy = radius - ly;
-            return dx * dx + dy * dy <= radius * radius;
-        }
-        if (lx < radius && ly > imgSize - radius) {
-            const dx = radius - lx,
-                dy = ly - (imgSize - radius);
-            return dx * dx + dy * dy <= radius * radius;
-        }
-        if (lx > imgSize - radius && ly > imgSize - radius) {
-            const dx = lx - (imgSize - radius),
-                dy = ly - (imgSize - radius);
-            return dx * dx + dy * dy <= radius * radius;
-        }
-        return true;
-    }
+	function boostColor(r, g, b) {
+		r = Math.min(255, r * BRIGHTNESS_LIFT);
+		g = Math.min(255, g * BRIGHTNESS_LIFT);
+		b = Math.min(255, b * BRIGHTNESS_LIFT);
+		const avg = (r + g + b) / 3;
+		return [
+			Math.min(255, Math.max(0, Math.round(avg + (r - avg) * SAT_BOOST))),
+			Math.min(255, Math.max(0, Math.round(avg + (g - avg) * SAT_BOOST))),
+			Math.min(255, Math.max(0, Math.round(avg + (b - avg) * SAT_BOOST))),
+		];
+	}
 
-    function buildDots(img, imgSize, dpr) {
-        const px = samplePixels(img, imgSize);
-        const spacing = Math.round(SPACING * dpr);
-        dotSize = Math.round(DOT * dpr);
-        const radius = Math.round(CORNER_RADIUS * dpr);
-        const dots = [];
+	// Check if a point is inside the rounded rect (for masking dots to shape)
+	function inRoundedRect(x, y, pad, imgSize, radius) {
+		const lx = x - pad;
+		const ly = y - pad;
+		if (lx < 0 || ly < 0 || lx >= imgSize || ly >= imgSize) return false;
+		// Check corners
+		if (lx < radius && ly < radius) {
+			const dx = radius - lx,
+				dy = radius - ly;
+			return dx * dx + dy * dy <= radius * radius;
+		}
+		if (lx > imgSize - radius && ly < radius) {
+			const dx = lx - (imgSize - radius),
+				dy = radius - ly;
+			return dx * dx + dy * dy <= radius * radius;
+		}
+		if (lx < radius && ly > imgSize - radius) {
+			const dx = radius - lx,
+				dy = ly - (imgSize - radius);
+			return dx * dx + dy * dy <= radius * radius;
+		}
+		if (lx > imgSize - radius && ly > imgSize - radius) {
+			const dx = lx - (imgSize - radius),
+				dy = ly - (imgSize - radius);
+			return dx * dx + dy * dy <= radius * radius;
+		}
+		return true;
+	}
 
-        for (let y = 0; y < imgSize; y += spacing) {
-            for (let x = 0; x < imgSize; x += spacing) {
-                const i = (y * imgSize + x) * 4;
-                if (px[i + 3] < 128) continue;
+	function buildDots(img, imgSize, dpr) {
+		const px = samplePixels(img, imgSize);
+		const spacing = Math.round(SPACING * dpr);
+		dotSize = Math.round(DOT * dpr);
+		const radius = Math.round(CORNER_RADIUS * dpr);
+		const dots = [];
 
-                if (
-                    !inRoundedRect(x + padPx, y + padPx, padPx, imgSize, radius)
-                )
-                    continue;
+		// Precompute constants for per-dot static fields
+		const centerPx = (imgSize + padPx * 2) / 2;
+		const imgHalfPx = imgSize / 2;
+		const crPx = Math.round(CORNER_RADIUS * dpr);
 
-                const lum =
-                    (0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2]) /
-                    255;
-                const brightness = Math.pow(lum, GAMMA);
+		for (let y = 0; y < imgSize; y += spacing) {
+			for (let x = 0; x < imgSize; x += spacing) {
+				const i = (y * imgSize + x) * 4;
+				if (px[i + 3] < 128) continue;
 
-                const bx = Math.floor(x / spacing) % 8;
-                const by = Math.floor(y / spacing) % 8;
-                // Bright areas (face): almost no dithering. Dark areas (edges): heavy dithering.
-                const threshold =
-                    BAYER[by][bx] * (1 - brightness * 0.92) * 0.898;
-                if (brightness <= threshold) continue;
+				if (!inRoundedRect(x + padPx, y + padPx, padPx, imgSize, radius)) continue;
 
-                const [r, g, b] = boostColor(px[i], px[i + 1], px[i + 2]);
-                const alpha = 0.67 + brightness * 0.22;
-                const glowAlpha = 0.065 + brightness * 0.125;
-                // Distance from center: 0 at middle, 1 at corner
-                const dx = (x - imgSize / 2) / (imgSize / 2);
-                const dy = (y - imgSize / 2) / (imgSize / 2);
-                const dist = Math.min(1, Math.sqrt(dx * dx + dy * dy));
-                // No swirl in center, ramps up at edges
-                const swirlDist = Math.max(0, dist - 0.4) / 0.6; // starts at 40% from center
-                const swirlScale = 0.05 + swirlDist * swirlDist * 2.5;
+				const lum = (0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2]) / 255;
+				const brightness = Math.pow(lum, GAMMA);
 
-                dots.push({
-                    x: x + padPx,
-                    y: y + padPx,
-                    color: `rgba(${r},${g},${b},${alpha})`,
-                    glowColor: `rgba(${r},${g},${b},${glowAlpha})`,
-                    swirlScale,
-                    ox: 0,
-                    oy: 0,
-                    phase: Math.random() * Math.PI * 2,
-                });
-            }
-        }
+				const bx = Math.floor(x / spacing) % 8;
+				const by = Math.floor(y / spacing) % 8;
+				// Bright areas (face): almost no dithering. Dark areas (edges): heavy dithering.
+				const threshold = BAYER[by][bx] * (1 - brightness * 0.92) * 0.898;
+				if (brightness <= threshold) continue;
 
-        return dots;
-    }
+				const [r, g, b] = boostColor(px[i], px[i + 1], px[i + 2]);
+				const alpha = 0.67 + brightness * 0.22;
+				const glowAlpha = 0.065 + brightness * 0.125;
+				// Distance from center: 0 at middle, 1 at corner
+				const dx = (x - imgSize / 2) / (imgSize / 2);
+				const dy = (y - imgSize / 2) / (imgSize / 2);
+				const dist = Math.min(1, Math.sqrt(dx * dx + dy * dy));
+				// No swirl in center, ramps up at edges
+				const swirlDist = Math.max(0, dist - 0.4) / 0.6; // starts at 40% from center
+				const swirlScale = 0.05 + swirlDist * swirlDist * 2.5;
 
-    function render() {
-        if (!active) return;
+				const posX = x + padPx;
+				const posY = y + padPx;
+				const phase = Math.random() * TWO_PI;
+				const nxv = posX * 0.006;
+				const nyv = posY * 0.006;
 
-        const now = performance.now();
-        const w = canvas.width;
-        const h = canvas.height;
-        const dpr = Math.min(window.devicePixelRatio || 1, 2);
-        const pondR = POND_RADIUS * dpr;
-        const pondS = POND_STRENGTH * dpr;
-        const ripW = RIPPLE_WIDTH * dpr;
-        const ripS = RIPPLE_STRENGTH * dpr;
+				// Static rounded-rect SDF depth (for light-mode dark glow)
+				const qx = Math.abs(posX - centerPx) - (imgHalfPx - crPx);
+				const qy = Math.abs(posY - centerPx) - (imgHalfPx - crPx);
+				const sdfDist =
+					Math.sqrt(Math.max(qx, 0) * Math.max(qx, 0) + Math.max(qy, 0) * Math.max(qy, 0)) +
+					Math.min(Math.max(qx, qy), 0) -
+					crPx;
+				const depth = Math.min(1, Math.max(0, -sdfDist / imgHalfPx) * 2.2);
+				const darkAlpha = 0.1 * depth * depth;
 
-        const age = (now - startMs) / 1000;
-        const fadeIn = Math.min(1, age / 0.8);
-        t += SWIRL_SPEED * 0.016; // ~60fps normalized
-        const swirlA = SWIRL_AMP * dpr;
+				// Entry animation: inside-out staggered fade. Jitter grows
+				// with radius so the outer ring dissolves in rather than
+				// arriving as a tight front. No positional motion.
+				const jitterRange = 0.18 + dist * 0.45;
+				const entryJitter = (Math.random() - 0.5) * jitterRange;
+				const entryDelay = Math.max(0, dist * ENTRY_MAX_DELAY + entryJitter);
 
-        if (now >= nextRandomRippleMs) {
-            ripples.push({
-                x: padPx + Math.random() * (w - padPx * 2),
-                y: padPx + Math.random() * (h - padPx * 2),
-                t: now,
-            });
-            nextRandomRippleMs = scheduleNextRandomRipple(now);
-        }
+				dots.push({
+					x: posX,
+					y: posY,
+					color: `rgba(${r},${g},${b},${alpha})`,
+					glowColor: `rgba(${r},${g},${b},${glowAlpha})`,
+					darkColor: `rgba(0,0,0,${darkAlpha})`,
+					darkAlpha,
+					swirlScale,
+					ox: 0,
+					oy: 0,
+					fx: posX,
+					fy: posY,
+					phase,
+					// Precomputed swirl coefficients
+					ax: nxv * 2.3,
+					ay: nyv * 1.9,
+					mx: nxv * 1.1 + nyv * 1.5,
+					p7: phase * 0.7,
+					// Entry animation
+					entryDelay,
+					entryAlpha: 0,
+				});
+			}
+		}
 
-        // Prune dead ripples
-        ripples = ripples.filter((r) => now - r.t < RIPPLE_LIFE);
+		return dots;
+	}
 
-        ctx.clearRect(0, 0, w, h);
-        ctx.globalAlpha = fadeIn;
+	function buildDarkSprite() {
+		const off = document.createElement("canvas");
+		off.width = canvas.width;
+		off.height = canvas.height;
+		const ox = off.getContext("2d");
+		const darkSize = Math.round(dotSize * 8);
+		const darkHalf = darkSize / 2;
+		for (let i = 0; i < allDots.length; i++) {
+			const dot = allDots[i];
+			if (dot.darkAlpha <= 0.001) continue;
+			ox.fillStyle = dot.darkColor;
+			ox.fillRect(dot.x - darkHalf, dot.y - darkHalf, darkSize, darkSize);
+		}
+		return off;
+	}
 
-        // Dark glow pass (light mode) — overlapping squares build up to solid black in dense areas
-        const isLight =
-            document.documentElement.getAttribute("data-theme") === "light";
-        if (isLight) {
-            ctx.globalCompositeOperation = "source-over";
-            const darkSize = Math.round(dotSize * 8);
-            const darkHalf = darkSize / 2;
-            const cx = w / 2;
-            const cy = h / 2;
-            const imgHalf = (w - padPx * 2) / 2;
-            const cr = Math.round(CORNER_RADIUS * dpr);
-            for (let i = 0; i < allDots.length; i++) {
-                const dot = allDots[i];
-                const p = dot.phase;
-                const nx = dot.x * 0.006;
-                const ny = dot.y * 0.006;
-                const angle =
-                    Math.sin(nx * 2.3 + t + p) *
-                    Math.cos(ny * 1.9 - t * 0.6 + p * 0.7) *
-                    Math.PI *
-                    2;
-                const swirlMag =
-                    swirlA *
-                    dot.swirlScale *
-                    (0.4 + 0.6 * Math.sin(nx * 1.1 + ny * 1.5 + t * 0.3 + p));
-                const fx = dot.x + dot.ox + Math.cos(angle) * swirlMag;
-                const fy = dot.y + dot.oy + Math.sin(angle) * swirlMag;
-                // Rounded-rect SDF: negative inside, 0 at edge
-                const qx = Math.abs(dot.x - cx) - (imgHalf - cr);
-                const qy = Math.abs(dot.y - cy) - (imgHalf - cr);
-                const sdf =
-                    Math.sqrt(Math.max(qx, 0) ** 2 + Math.max(qy, 0) ** 2) +
-                    Math.min(Math.max(qx, qy), 0) -
-                    cr;
-                const depth = Math.min(1, Math.max(0, -sdf / imgHalf) * 2.2);
-                const alpha = 0.1 * depth * depth;
-                ctx.fillStyle = `rgba(0,0,0,${alpha})`;
-                ctx.fillRect(fx - darkHalf, fy - darkHalf, darkSize, darkSize);
-            }
-        }
+	function render() {
+		if (!active) return;
 
-        const glowPad = Math.max(1, Math.round(dpr));
-        ctx.globalCompositeOperation = "screen";
+		const now = performance.now();
+		const w = canvas.width;
+		const h = canvas.height;
+		const dpr = Math.min(window.devicePixelRatio || 1, 2);
+		const pondR = POND_RADIUS * dpr;
+		const pondR2 = pondR * pondR;
+		const pondS = POND_STRENGTH * dpr;
+		const ripW = RIPPLE_WIDTH * dpr;
+		const ripS = RIPPLE_STRENGTH * dpr;
 
-        let prevGlow = "";
-        for (let i = 0; i < allDots.length; i++) {
-            const dot = allDots[i];
-            const p = dot.phase;
-            const nx = dot.x * 0.006;
-            const ny = dot.y * 0.006;
-            const angle =
-                Math.sin(nx * 2.3 + t + p) *
-                Math.cos(ny * 1.9 - t * 0.6 + p * 0.7) *
-                Math.PI *
-                2;
-            const swirlMag =
-                swirlA *
-                dot.swirlScale *
-                (0.4 + 0.6 * Math.sin(nx * 1.1 + ny * 1.5 + t * 0.3 + p));
-            const sx = Math.cos(angle) * swirlMag;
-            const sy = Math.sin(angle) * swirlMag;
-            const fx = dot.x + dot.ox + sx;
-            const fy = dot.y + dot.oy + sy;
+		const age = (now - startMs) / 1000;
+		t += SWIRL_SPEED * 0.016; // ~60fps normalized
+		const swirlA = SWIRL_AMP * dpr;
+		const tSlow = t * 0.6;
+		const tMicro = t * 0.3;
 
-            if (dot.glowColor !== prevGlow) {
-                ctx.fillStyle = dot.glowColor;
-                prevGlow = dot.glowColor;
-            }
-            ctx.fillRect(
-                fx - glowPad,
-                fy - glowPad,
-                dotSize + glowPad * 2,
-                dotSize + glowPad * 2,
-            );
-        }
+		// Entry-done once the latest-possible dot has finished its fade
+		if (!entryDone && age > ENTRY_MAX_DELAY + ENTRY_FADE + 0.2) {
+			entryDone = true;
+		}
+		// Global entry progress (used to fade the dark sprite smoothly)
+		const globalEntry = entryDone ? 1 : Math.min(1, age / (ENTRY_MAX_DELAY + ENTRY_FADE * 0.9));
 
-        ctx.globalCompositeOperation = "source-over";
-        ctx.globalAlpha = fadeIn;
-        let prevColor = "";
+		if (now >= nextRandomRippleMs) {
+			ripples.push({
+				x: padPx + Math.random() * (w - padPx * 2),
+				y: padPx + Math.random() * (h - padPx * 2),
+				t: now,
+			});
+			nextRandomRippleMs = scheduleNextRandomRipple(now);
+		}
 
-        for (let i = 0; i < allDots.length; i++) {
-            const dot = allDots[i];
+		// Prune dead ripples
+		if (ripples.length > 0) {
+			ripples = ripples.filter((r) => now - r.t < RIPPLE_LIFE);
+		}
 
-            // Pond repulsion
-            const ddx = dot.x + dot.ox - cursorPx;
-            const ddy = dot.y + dot.oy - cursorPy;
+		// Precompute per-frame ripple state
+		const nRipples = ripples.length;
+		let ripRadii = null;
+		let ripFades = null;
+		let ripRadiiMax = null;
+		if (nRipples > 0) {
+			ripRadii = new Float32Array(nRipples);
+			ripFades = new Float32Array(nRipples);
+			ripRadiiMax = new Float32Array(nRipples);
+			for (let ri = 0; ri < nRipples; ri++) {
+				const elapsed = now - ripples[ri].t;
+				const rad = elapsed * RIPPLE_SPEED * dpr;
+				ripRadii[ri] = rad;
+				ripFades[ri] = 1 - elapsed / RIPPLE_LIFE;
+				ripRadiiMax[ri] = rad + ripW;
+			}
+		}
 
-            let targetOx = 0;
-            let targetOy = 0;
+		ctx.clearRect(0, 0, w, h);
+		ctx.globalAlpha = 1;
 
-            if (hovering && Math.abs(ddx) < pondR && Math.abs(ddy) < pondR) {
-                const dist = Math.sqrt(ddx * ddx + ddy * ddy);
-                if (dist < pondR && dist > 0.1) {
-                    const force = (1 - dist / pondR) ** 2 * pondS;
-                    targetOx = (ddx / dist) * force;
-                    targetOy = (ddy / dist) * force;
-                }
-            }
+		const isLight = document.documentElement.getAttribute("data-theme") === "light";
+		if (isLight !== lastIsLight) {
+			lastIsLight = isLight;
+			if (!isLight) darkSprite = null;
+		}
 
-            // Ripple forces
-            for (let ri = 0; ri < ripples.length; ri++) {
-                const rip = ripples[ri];
-                const elapsed = now - rip.t;
-                const ripRadius = elapsed * RIPPLE_SPEED * dpr;
-                const fade = 1 - elapsed / RIPPLE_LIFE;
+		// PASS 1: physics update + swirl — compute fx/fy once and cache
+		const N = allDots.length;
+		for (let i = 0; i < N; i++) {
+			const dot = allDots[i];
 
-                const rx = dot.x - rip.x;
-                const ry = dot.y - rip.y;
-                const dist = Math.sqrt(rx * rx + ry * ry);
+			// Pond repulsion (squared-distance check avoids a sqrt when far)
+			let targetOx = 0;
+			let targetOy = 0;
+			if (hovering) {
+				const ddx = dot.x + dot.ox - cursorPx;
+				const ddy = dot.y + dot.oy - cursorPy;
+				const adx = ddx < 0 ? -ddx : ddx;
+				const ady = ddy < 0 ? -ddy : ddy;
+				if (adx < pondR && ady < pondR) {
+					const d2 = ddx * ddx + ddy * ddy;
+					if (d2 < pondR2 && d2 > 0.01) {
+						const dist = Math.sqrt(d2);
+						const k = 1 - dist / pondR;
+						const force = (k * k * pondS) / dist;
+						targetOx = ddx * force;
+						targetOy = ddy * force;
+					}
+				}
+			}
 
-                const diff = Math.abs(dist - ripRadius);
-                if (diff < ripW && dist > 0.1) {
-                    const intensity = (1 - diff / ripW) * fade * ripS;
-                    targetOx += (rx / dist) * intensity;
-                    targetOy += (ry / dist) * intensity;
-                }
-            }
+			// Ripple forces with AABB early reject
+			for (let ri = 0; ri < nRipples; ri++) {
+				const rip = ripples[ri];
+				const rx = dot.x - rip.x;
+				const ry = dot.y - rip.y;
+				const arx = rx < 0 ? -rx : rx;
+				const ary = ry < 0 ? -ry : ry;
+				const rMax = ripRadiiMax[ri];
+				if (arx > rMax || ary > rMax) continue;
+				const d2 = rx * rx + ry * ry;
+				const dist = Math.sqrt(d2);
+				const rr = ripRadii[ri];
+				const diff = dist > rr ? dist - rr : rr - dist;
+				if (diff < ripW && dist > 0.1) {
+					const intensity = ((1 - diff / ripW) * ripFades[ri] * ripS) / dist;
+					targetOx += rx * intensity;
+					targetOy += ry * intensity;
+				}
+			}
 
-            dot.ox += (targetOx - dot.ox) * POND_SPRING;
-            dot.oy += (targetOy - dot.oy) * POND_SPRING;
-            dot.ox *= POND_DECAY;
-            dot.oy *= POND_DECAY;
+			dot.ox += (targetOx - dot.ox) * POND_SPRING;
+			dot.oy += (targetOy - dot.oy) * POND_SPRING;
+			dot.ox *= POND_DECAY;
+			dot.oy *= POND_DECAY;
 
-            // Continuous swirl with per-dot randomized phase
-            const p = dot.phase;
-            const nx = dot.x * 0.006;
-            const ny = dot.y * 0.006;
-            const angle =
-                Math.sin(nx * 2.3 + t + p) *
-                Math.cos(ny * 1.9 - t * 0.6 + p * 0.7) *
-                Math.PI *
-                2;
-            const swirlMag =
-                swirlA *
-                dot.swirlScale *
-                (0.4 + 0.6 * Math.sin(nx * 1.1 + ny * 1.5 + t * 0.3 + p));
-            const sx = Math.cos(angle) * swirlMag;
-            const sy = Math.sin(angle) * swirlMag;
+			// Per-dot entry animation: staggered fade only, no motion
+			if (!entryDone) {
+				const rawP = (age - dot.entryDelay) / ENTRY_FADE;
+				if (rawP <= 0) {
+					dot.entryAlpha = 0;
+				} else if (rawP >= 1) {
+					dot.entryAlpha = 1;
+				} else {
+					// ease-out cubic
+					const inv = 1 - rawP;
+					dot.entryAlpha = 1 - inv * inv * inv;
+				}
+			}
 
-            const fx = dot.x + dot.ox + sx;
-            const fy = dot.y + dot.oy + sy;
+			// Continuous swirl using precomputed per-dot coefficients
+			const p = dot.phase;
+			const angle = Math.sin(dot.ax + t + p) * Math.cos(dot.ay - tSlow + dot.p7) * TWO_PI;
+			const swirlMag = swirlA * dot.swirlScale * (0.4 + 0.6 * Math.sin(dot.mx + tMicro + p));
+			dot.fx = dot.x + dot.ox + Math.cos(angle) * swirlMag;
+			dot.fy = dot.y + dot.oy + Math.sin(angle) * swirlMag;
+		}
 
-            if (dot.color !== prevColor) {
-                ctx.fillStyle = dot.color;
-                prevColor = dot.color;
-            }
-            ctx.fillRect(fx, fy, dotSize, dotSize);
-        }
+		// PASS 2: dark background glow (light mode) — drawn from a cached sprite.
+		// The sprite is built once per theme. Swirl offsets are tiny (~7px) relative
+		// to the 16px soft blobs, so the static sprite is visually indistinguishable.
+		if (isLight) {
+			if (!darkSprite) darkSprite = buildDarkSprite();
+			ctx.globalCompositeOperation = "source-over";
+			// Smooth global fade so the dark layer doesn't pop in during entry
+			ctx.globalAlpha = globalEntry * globalEntry;
+			ctx.drawImage(darkSprite, 0, 0);
+		}
 
-        ctx.globalAlpha = 1;
-        requestAnimationFrame(render);
-    }
+		// PASS 3: glow layer (screen composite)
+		const glowPad = Math.max(1, Math.round(dpr));
+		const glowSize = dotSize + glowPad * 2;
+		ctx.globalCompositeOperation = "screen";
+		if (entryDone) {
+			ctx.globalAlpha = 1;
+			for (let i = 0; i < N; i++) {
+				const dot = allDots[i];
+				ctx.fillStyle = dot.glowColor;
+				ctx.fillRect(dot.fx - glowPad, dot.fy - glowPad, glowSize, glowSize);
+			}
+		} else {
+			for (let i = 0; i < N; i++) {
+				const dot = allDots[i];
+				const a = dot.entryAlpha;
+				if (a <= 0.001) continue;
+				ctx.globalAlpha = a;
+				ctx.fillStyle = dot.glowColor;
+				ctx.fillRect(dot.fx - glowPad, dot.fy - glowPad, glowSize, glowSize);
+			}
+		}
 
-    function process(img) {
-        const cssTotalSize = wrap.clientWidth;
-        const dpr = Math.min(window.devicePixelRatio || 1, 2);
-        const totalSize = Math.round(cssTotalSize * dpr);
-        // Compute padding in canvas pixels from the CSS margin
-        const style = getComputedStyle(wrap);
-        const cssImgSize = cssTotalSize + parseFloat(style.marginLeft) * 2;
-        padPx = Math.round(40 * dpr);
-        const imgSize = totalSize - padPx * 2;
+		// PASS 4: main dots
+		ctx.globalCompositeOperation = "source-over";
+		if (entryDone) {
+			ctx.globalAlpha = 1;
+			for (let i = 0; i < N; i++) {
+				const dot = allDots[i];
+				ctx.fillStyle = dot.color;
+				ctx.fillRect(dot.fx, dot.fy, dotSize, dotSize);
+			}
+		} else {
+			for (let i = 0; i < N; i++) {
+				const dot = allDots[i];
+				const a = dot.entryAlpha;
+				if (a <= 0.001) continue;
+				ctx.globalAlpha = a;
+				ctx.fillStyle = dot.color;
+				ctx.fillRect(dot.fx, dot.fy, dotSize, dotSize);
+			}
+		}
 
-        canvas.width = totalSize;
-        canvas.height = totalSize;
+		ctx.globalAlpha = 1;
+		requestAnimationFrame(render);
+	}
 
-        allDots = buildDots(img, imgSize, dpr);
+	function process(img) {
+		const cssTotalSize = wrap.clientWidth;
+		const dpr = Math.min(window.devicePixelRatio || 1, 2);
+		const totalSize = Math.round(cssTotalSize * dpr);
+		// Compute padding in canvas pixels from the CSS margin
+		const style = getComputedStyle(wrap);
+		const cssImgSize = cssTotalSize + parseFloat(style.marginLeft) * 2;
+		padPx = Math.round(40 * dpr);
+		const imgSize = totalSize - padPx * 2;
 
-        active = true;
-        startMs = performance.now();
-        nextRandomRippleMs = scheduleNextRandomRipple(startMs);
-        requestAnimationFrame(render);
+		canvas.width = totalSize;
+		canvas.height = totalSize;
 
-        canvas.addEventListener("mousemove", (e) => {
-            const r = canvas.getBoundingClientRect();
-            cursorPx = ((e.clientX - r.left) / r.width) * canvas.width;
-            cursorPy = ((e.clientY - r.top) / r.height) * canvas.height;
-            hovering = true;
-        });
-        canvas.addEventListener("mouseleave", () => {
-            hovering = false;
-        });
-        function haptic() {
-            if (navigator.vibrate) navigator.vibrate(8);
-        }
+		allDots = buildDots(img, imgSize, dpr);
+		darkSprite = null;
+		entryDone = false;
 
-        canvas.addEventListener("click", (e) => {
-            const r = canvas.getBoundingClientRect();
-            ripples.push({
-                x: ((e.clientX - r.left) / r.width) * canvas.width,
-                y: ((e.clientY - r.top) / r.height) * canvas.height,
-                t: performance.now(),
-            });
-            haptic();
-        });
+		active = true;
+		startMs = performance.now();
+		nextRandomRippleMs = scheduleNextRandomRipple(startMs);
+		requestAnimationFrame(render);
 
-        canvas.addEventListener(
-            "touchstart",
-            (e) => {
-                const r = canvas.getBoundingClientRect();
-                cursorPx =
-                    ((e.touches[0].clientX - r.left) / r.width) * canvas.width;
-                cursorPy =
-                    ((e.touches[0].clientY - r.top) / r.height) * canvas.height;
-                hovering = true;
-                // Ripple on tap
-                ripples.push({
-                    x: cursorPx,
-                    y: cursorPy,
-                    t: performance.now(),
-                });
-                haptic();
-            },
-            { passive: true },
-        );
+		canvas.addEventListener("mousemove", (e) => {
+			const r = canvas.getBoundingClientRect();
+			cursorPx = ((e.clientX - r.left) / r.width) * canvas.width;
+			cursorPy = ((e.clientY - r.top) / r.height) * canvas.height;
+			hovering = true;
+		});
+		canvas.addEventListener("mouseleave", () => {
+			hovering = false;
+		});
+		function haptic() {
+			if (navigator.vibrate) navigator.vibrate(8);
+		}
 
-        canvas.addEventListener(
-            "touchmove",
-            (e) => {
-                e.preventDefault();
-                const r = canvas.getBoundingClientRect();
-                cursorPx =
-                    ((e.touches[0].clientX - r.left) / r.width) * canvas.width;
-                cursorPy =
-                    ((e.touches[0].clientY - r.top) / r.height) * canvas.height;
-                hovering = true;
-            },
-            { passive: false },
-        );
-        canvas.addEventListener("touchend", () => {
-            hovering = false;
-        });
-    }
+		canvas.addEventListener("click", (e) => {
+			const r = canvas.getBoundingClientRect();
+			ripples.push({
+				x: ((e.clientX - r.left) / r.width) * canvas.width,
+				y: ((e.clientY - r.top) / r.height) * canvas.height,
+				t: performance.now(),
+			});
+			haptic();
+		});
 
-    fileInput.addEventListener("change", (e) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        loadImg(URL.createObjectURL(file)).then(process);
-    });
+		canvas.addEventListener(
+			"touchstart",
+			(e) => {
+				const r = canvas.getBoundingClientRect();
+				cursorPx = ((e.touches[0].clientX - r.left) / r.width) * canvas.width;
+				cursorPy = ((e.touches[0].clientY - r.top) / r.height) * canvas.height;
+				hovering = true;
+				// Ripple on tap
+				ripples.push({
+					x: cursorPx,
+					y: cursorPy,
+					t: performance.now(),
+				});
+				haptic();
+			},
+			{ passive: true },
+		);
 
-    loadImg("/me.jpg")
-        .then(process)
-        .catch(() => {
-            wrap.addEventListener("click", () => fileInput.click(), {
-                once: true,
-            });
-        });
+		canvas.addEventListener(
+			"touchmove",
+			(e) => {
+				e.preventDefault();
+				const r = canvas.getBoundingClientRect();
+				cursorPx = ((e.touches[0].clientX - r.left) / r.width) * canvas.width;
+				cursorPy = ((e.touches[0].clientY - r.top) / r.height) * canvas.height;
+				hovering = true;
+			},
+			{ passive: false },
+		);
+		canvas.addEventListener("touchend", () => {
+			hovering = false;
+		});
+	}
+
+	fileInput.addEventListener("change", (e) => {
+		const file = e.target.files?.[0];
+		if (!file) return;
+		loadImg(URL.createObjectURL(file)).then(process);
+	});
+
+	loadImg("/me.jpg")
+		.then(process)
+		.catch(() => {
+			wrap.addEventListener("click", () => fileInput.click(), {
+				once: true,
+			});
+		});
 </script>

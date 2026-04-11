@@ -35,7 +35,7 @@ async function main() {
 	}
 
 	articles.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-	await writeFile(outputPath, JSON.stringify(articles, null, 2) + "\n", "utf8");
+	await writeFile(outputPath, `${JSON.stringify(articles, null, 2)}\n`, "utf8");
 
 	console.log(
 		`Synced ${articles.length} external article${articles.length === 1 ? "" : "s"} from ${config.sources.length} source${config.sources.length === 1 ? "" : "s"}.`,
@@ -47,7 +47,7 @@ async function loadConfig() {
 	const parsed = JSON.parse(raw);
 
 	if (!parsed || !Array.isArray(parsed.sources)) {
-		throw new Error("articles.config.json must contain a top-level \"sources\" array.");
+		throw new Error('articles.config.json must contain a top-level "sources" array.');
 	}
 
 	return parsed;
@@ -59,7 +59,7 @@ function validateSource(source) {
 	}
 
 	if (typeof source.name !== "string" || source.name.length === 0) {
-		throw new Error("Each source needs a non-empty \"name\".");
+		throw new Error('Each source needs a non-empty "name".');
 	}
 
 	if (typeof source.feed !== "string" || source.feed.length === 0) {
@@ -71,7 +71,8 @@ async function fetchFeed(url) {
 	const response = await fetch(url, {
 		headers: {
 			"user-agent": "lucasilverentand.com article sync",
-			accept: "application/rss+xml, application/atom+xml, application/xml, text/xml;q=0.9, */*;q=0.1",
+			accept:
+				"application/rss+xml, application/atom+xml, application/xml, text/xml;q=0.9, */*;q=0.1",
 		},
 	});
 
@@ -140,6 +141,7 @@ function normalizeItem(item, source) {
 	const sourceName = cleanText(source.label) ?? cleanText(source.name) ?? "External";
 	const content = item.content ?? item.description ?? "";
 	const excerpt = collapseWhitespace(htmlToText(item.description ?? content)).slice(0, 280);
+	const image = extractFirstImage(content) ?? extractFirstImage(item.description ?? "");
 	const tags = uniqueStrings([
 		...(Array.isArray(source.tags) ? source.tags : []),
 		...item.categories.map((category) => cleanText(category)).filter(Boolean),
@@ -155,8 +157,31 @@ function normalizeItem(item, source) {
 		source: sourceName,
 		externalUrl: link,
 		canonicalUrl: link,
+		image: image ?? undefined,
 		imported: true,
 	};
+}
+
+function extractFirstImage(html) {
+	if (typeof html !== "string" || html.length === 0) {
+		return null;
+	}
+
+	const match = html.match(/<img\b[^>]*?\bsrc=(["'])(.*?)\1/i);
+	if (!match) {
+		return null;
+	}
+
+	const src = decodeXmlEntities(match[2]).trim();
+	if (!src) {
+		return null;
+	}
+
+	try {
+		return new URL(src).toString();
+	} catch {
+		return null;
+	}
 }
 
 async function removeLegacyImportedMarkdown() {
@@ -168,18 +193,27 @@ async function removeLegacyImportedMarkdown() {
 }
 
 function matchBlocks(xml, tagName) {
-	const pattern = new RegExp(`<${escapeRegExp(tagName)}(?:\\s[^>]*)?>([\\s\\S]*?)</${escapeRegExp(tagName)}>`, "gi");
+	const pattern = new RegExp(
+		`<${escapeRegExp(tagName)}(?:\\s[^>]*)?>([\\s\\S]*?)</${escapeRegExp(tagName)}>`,
+		"gi",
+	);
 	return [...xml.matchAll(pattern)].map((match) => match[1]);
 }
 
 function getTagValue(xml, tagName) {
-	const pattern = new RegExp(`<${escapeRegExp(tagName)}(?:\\s[^>]*)?>([\\s\\S]*?)</${escapeRegExp(tagName)}>`, "i");
+	const pattern = new RegExp(
+		`<${escapeRegExp(tagName)}(?:\\s[^>]*)?>([\\s\\S]*?)</${escapeRegExp(tagName)}>`,
+		"i",
+	);
 	const match = xml.match(pattern);
 	return match ? decodeXmlEntities(stripCdata(match[1]).trim()) : null;
 }
 
 function getTagValues(xml, tagName) {
-	const pattern = new RegExp(`<${escapeRegExp(tagName)}(?:\\s[^>]*)?>([\\s\\S]*?)</${escapeRegExp(tagName)}>`, "gi");
+	const pattern = new RegExp(
+		`<${escapeRegExp(tagName)}(?:\\s[^>]*)?>([\\s\\S]*?)</${escapeRegExp(tagName)}>`,
+		"gi",
+	);
 	return [...xml.matchAll(pattern)].map((match) => decodeXmlEntities(stripCdata(match[1]).trim()));
 }
 
@@ -220,7 +254,7 @@ function decodeXmlEntities(value) {
 		.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1")
 		.replace(/&lt;/g, "<")
 		.replace(/&gt;/g, ">")
-		.replace(/&quot;/g, "\"")
+		.replace(/&quot;/g, '"')
 		.replace(/&#39;/g, "'")
 		.replace(/&apos;/g, "'")
 		.replace(/&amp;/g, "&")

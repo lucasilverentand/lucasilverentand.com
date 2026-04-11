@@ -1,5 +1,5 @@
-import externalArticles from "../data/external-articles.json";
 import type { CollectionEntry } from "astro:content";
+import externalArticles from "../data/external-articles.json";
 
 export type ExternalArticle = {
 	id: string;
@@ -10,6 +10,7 @@ export type ExternalArticle = {
 	source?: string;
 	externalUrl: string;
 	canonicalUrl?: string;
+	image?: string;
 	imported: true;
 };
 
@@ -23,6 +24,7 @@ export type WritingEntry =
 			source?: string;
 			externalUrl?: string;
 			canonicalUrl?: string;
+			image?: string;
 			imported: boolean;
 	  }
 	| {
@@ -34,6 +36,7 @@ export type WritingEntry =
 			source?: string;
 			externalUrl: string;
 			canonicalUrl?: string;
+			image?: string;
 			imported: true;
 	  };
 
@@ -54,6 +57,7 @@ export function toWritingEntry(post: CollectionEntry<"blog">): WritingEntry {
 		source: post.data.source,
 		externalUrl: post.data.externalUrl,
 		canonicalUrl: post.data.canonicalUrl,
+		image: post.data.image,
 		imported: post.data.imported,
 	};
 }

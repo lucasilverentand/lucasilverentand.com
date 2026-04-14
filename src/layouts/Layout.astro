@@ -60,18 +60,57 @@ const canonicalUrl = new URL(Astro.url.pathname, Astro.site).href;
 
 <script>
 	// Site-wide reveal-on-scroll observer for `.fade-in` elements.
+	// Batches elements that enter the viewport in the same frame and
+	// staggers them top-to-bottom with incremental transition-delays.
 	// Components that create cards dynamically can call
 	// `window.__fadeInObserver?.observe(el)` to opt those in.
+
+	const STAGGER_STEP = 0.07; // seconds between each element in a batch
+	const MAX_DELAY = 0.6; // cap so late elements don't feel sluggish
+	const CLEANUP_MS = 1200; // remove delay after transition settles
+
+	let pending: Element[] = [];
+	let rafScheduled = false;
+
+	function flushBatch() {
+		rafScheduled = false;
+		if (!pending.length) return;
+
+		// Sort by vertical position so top elements animate first
+		const batch = pending
+			.map((el) => ({ el, top: el.getBoundingClientRect().top }))
+			.sort((a, b) => a.top - b.top);
+
+		pending = [];
+
+		for (let i = 0; i < batch.length; i++) {
+			const el = batch[i].el as HTMLElement;
+			const delay = Math.min(i * STAGGER_STEP, MAX_DELAY);
+			el.style.setProperty("--reveal-delay", `${delay}s`);
+			el.classList.add("visible");
+			observer.unobserve(el);
+
+			// Clean up the delay after animation finishes so it doesn't
+			// interfere with hover/filter transitions later
+			setTimeout(() => {
+				el.style.removeProperty("--reveal-delay");
+			}, (delay + 0.6) * 1000 + CLEANUP_MS);
+		}
+	}
+
 	const observer = new IntersectionObserver(
 		(entries) => {
 			for (const entry of entries) {
 				if (entry.isIntersecting) {
-					entry.target.classList.add("visible");
-					observer.unobserve(entry.target);
+					pending.push(entry.target);
 				}
 			}
+			if (pending.length && !rafScheduled) {
+				rafScheduled = true;
+				requestAnimationFrame(flushBatch);
+			}
 		},
-		{ threshold: 0.1, rootMargin: "0px 0px -40px 0px" },
+		{ threshold: 0.08, rootMargin: "0px 0px -30px 0px" },
 	);
 	(window as unknown as { __fadeInObserver: IntersectionObserver }).__fadeInObserver = observer;
 	document.querySelectorAll(".fade-in").forEach((el) => observer.observe(el));

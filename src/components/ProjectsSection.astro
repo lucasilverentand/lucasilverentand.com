@@ -1,10 +1,10 @@
 <section class="pt-16 pb-20 border-t border-border-subtle">
 	<div class="max-w-240 mx-auto px-6">
-		<div class="flex items-baseline gap-3 mb-6">
+		<div class="flex items-baseline gap-3 mb-6 fade-in">
 			<h2 class="font-display text-[32px] font-normal">Projects</h2>
 			<span id="projects-count" class="font-mono text-[13px] text-text-faint"></span>
 		</div>
-		<div id="filter-bar" class="flex flex-wrap items-center gap-2 mb-7 pb-6 border-b border-border-subtle">
+		<div id="filter-bar" class="flex flex-wrap items-center gap-2 mb-7 pb-6 border-b border-border-subtle fade-in">
 		</div>
 		<div id="projects-grid" class="grid grid-cols-3 gap-3 max-md:grid-cols-2 max-sm:grid-cols-1">
 		</div>
@@ -383,7 +383,6 @@
 		card.target = "_blank";
 		card.rel = "noopener";
 		card.className = "card fade-in";
-		card.style.transitionDelay = `${Math.min(index, 11) * 0.02}s`;
 
 		const lang = tags.language[0];
 		const accent = lang ? (LANG_COLORS[lang] ?? "var(--color-border-strong)") : "var(--color-border-strong)";

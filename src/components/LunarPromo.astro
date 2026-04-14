@@ -4,13 +4,13 @@
 			href="https://lunar.lucasilverentand.com"
 			target="_blank"
 			rel="noopener"
-			class="lunar-promo group block relative rounded-[14px] overflow-hidden border border-border bg-black"
+			class="lunar-promo group block relative rounded-[14px] overflow-hidden border border-[#1a1f2e] bg-black fade-in"
 		>
 			<div>
 				<img
 					src="https://raw.githubusercontent.com/lucasilverentand/artemis-lunar-wallpapers/main/thumbnails/earthrise-over-moon-limb.jpg"
 					alt=""
-					class="absolute bottom-0 right-0 h-full rotate-y-180"
+					class="lunar-bg absolute bottom-0 right-0 h-full rotate-y-180"
 					loading="lazy"
 				/>
 				<div class="promo-body relative p-9 max-md:p-6">
@@ -49,71 +49,64 @@
 	</div>
 </section>
 
+<script>
+	const img = document.querySelector<HTMLImageElement>(".lunar-bg");
+	if (img) {
+		if (img.complete && img.naturalWidth > 0) {
+			img.classList.add("loaded");
+		} else {
+			img.addEventListener("load", () => img.classList.add("loaded"), { once: true });
+		}
+	}
+</script>
+
 <style>
-	/* Card container blurs in after the hero finishes. */
-	.lunar-promo {
+	/* Background image fades in once loaded. */
+	.lunar-bg {
 		opacity: 0;
-		filter: blur(14px);
-		transform: translateY(18px);
-		will-change: filter, opacity, transform;
-		animation: lunar-card-in 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
-		animation-delay: 1.2s;
+		transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+	}
+	.lunar-bg.loaded {
+		opacity: 1;
 	}
 
-	/* Promo body cascade — children blur-fade in staggered after the card. */
+	/* Promo body cascade — children blur-fade in staggered after the card reveals. */
 	.lunar-promo .promo-body > * {
 		opacity: 0;
 		filter: blur(10px);
 		transform: translateY(0.3em);
-		will-change: filter, opacity, transform;
-		animation: lunar-child-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+		transition:
+			opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+			filter 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+			transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+	}
+	.lunar-promo.visible .promo-body > * {
+		opacity: 1;
+		filter: blur(0);
+		transform: translateY(0);
 	}
 	.lunar-promo .promo-body > *:nth-child(1) {
-		animation-delay: 1.45s;
+		transition-delay: 0.1s;
 	}
 	.lunar-promo .promo-body > *:nth-child(2) {
-		animation-delay: 1.54s;
+		transition-delay: 0.2s;
 	}
 	.lunar-promo .promo-body > *:nth-child(3) {
-		animation-delay: 1.63s;
+		transition-delay: 0.32s;
 	}
 	.lunar-promo .promo-body > *:nth-child(4) {
-		animation-delay: 1.72s;
-	}
-
-	@keyframes lunar-card-in {
-		from {
-			opacity: 0;
-			filter: blur(14px);
-			transform: translateY(18px);
-		}
-		to {
-			opacity: 1;
-			filter: blur(0);
-			transform: translateY(0);
-		}
-	}
-
-	@keyframes lunar-child-in {
-		from {
-			opacity: 0;
-			filter: blur(10px);
-			transform: translateY(0.3em);
-		}
-		to {
-			opacity: 1;
-			filter: blur(0);
-			transform: translateY(0);
-		}
+		transition-delay: 0.44s;
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		.lunar-promo,
-		.lunar-promo .promo-body > * {
-			animation: none;
+		.lunar-bg {
 			opacity: 1;
-			filter: none;
-			transform: none;
+			transition: none;
+		}
+		.lunar-promo .promo-body > * {
+			transition: opacity 0.3s ease;
+			transform: none !important;
+			filter: none !important;
 		}
 	}
 </style>

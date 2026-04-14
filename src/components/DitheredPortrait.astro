@@ -65,20 +65,7 @@ const total = size + pad * 2;
 	let ripples = [];
 	let t = 0;
 	let nextRandomRippleMs = 0;
-	let darkSprite = null;
-	let lastIsLight = null;
 	let entryDone = false;
-
-	// Invalidate dark sprite when theme changes
-	if (typeof MutationObserver !== "undefined") {
-		const themeObserver = new MutationObserver(() => {
-			darkSprite = null;
-		});
-		themeObserver.observe(document.documentElement, {
-			attributes: true,
-			attributeFilter: ["data-theme"],
-		});
-	}
 
 	function scheduleNextRandomRipple(now) {
 		return (
@@ -156,11 +143,6 @@ const total = size + pad * 2;
 		const radius = Math.round(CORNER_RADIUS * dpr);
 		const dots = [];
 
-		// Precompute constants for per-dot static fields
-		const centerPx = (imgSize + padPx * 2) / 2;
-		const imgHalfPx = imgSize / 2;
-		const crPx = Math.round(CORNER_RADIUS * dpr);
-
 		for (let y = 0; y < imgSize; y += spacing) {
 			for (let x = 0; x < imgSize; x += spacing) {
 				const i = (y * imgSize + x) * 4;
@@ -194,16 +176,6 @@ const total = size + pad * 2;
 				const nxv = posX * 0.006;
 				const nyv = posY * 0.006;
 
-				// Static rounded-rect SDF depth (for light-mode dark glow)
-				const qx = Math.abs(posX - centerPx) - (imgHalfPx - crPx);
-				const qy = Math.abs(posY - centerPx) - (imgHalfPx - crPx);
-				const sdfDist =
-					Math.sqrt(Math.max(qx, 0) * Math.max(qx, 0) + Math.max(qy, 0) * Math.max(qy, 0)) +
-					Math.min(Math.max(qx, qy), 0) -
-					crPx;
-				const depth = Math.min(1, Math.max(0, -sdfDist / imgHalfPx) * 2.2);
-				const darkAlpha = 0.1 * depth * depth;
-
 				// Entry animation: inside-out staggered fade. Jitter grows
 				// with radius so the outer ring dissolves in rather than
 				// arriving as a tight front. No positional motion.
@@ -216,8 +188,6 @@ const total = size + pad * 2;
 					y: posY,
 					color: `rgba(${r},${g},${b},${alpha})`,
 					glowColor: `rgba(${r},${g},${b},${glowAlpha})`,
-					darkColor: `rgba(0,0,0,${darkAlpha})`,
-					darkAlpha,
 					swirlScale,
 					ox: 0,
 					oy: 0,
@@ -237,22 +207,6 @@ const total = size + pad * 2;
 		}
 
 		return dots;
-	}
-
-	function buildDarkSprite() {
-		const off = document.createElement("canvas");
-		off.width = canvas.width;
-		off.height = canvas.height;
-		const ox = off.getContext("2d");
-		const darkSize = Math.round(dotSize * 8);
-		const darkHalf = darkSize / 2;
-		for (let i = 0; i < allDots.length; i++) {
-			const dot = allDots[i];
-			if (dot.darkAlpha <= 0.001) continue;
-			ox.fillStyle = dot.darkColor;
-			ox.fillRect(dot.x - darkHalf, dot.y - darkHalf, darkSize, darkSize);
-		}
-		return off;
 	}
 
 	function render() {
@@ -278,9 +232,6 @@ const total = size + pad * 2;
 		if (!entryDone && age > ENTRY_MAX_DELAY + ENTRY_FADE + 0.2) {
 			entryDone = true;
 		}
-		// Global entry progress (used to fade the dark sprite smoothly)
-		const globalEntry = entryDone ? 1 : Math.min(1, age / (ENTRY_MAX_DELAY + ENTRY_FADE * 0.9));
-
 		if (now >= nextRandomRippleMs) {
 			ripples.push({
 				x: padPx + Math.random() * (w - padPx * 2),
@@ -315,12 +266,6 @@ const total = size + pad * 2;
 
 		ctx.clearRect(0, 0, w, h);
 		ctx.globalAlpha = 1;
-
-		const isLight = document.documentElement.getAttribute("data-theme") === "light";
-		if (isLight !== lastIsLight) {
-			lastIsLight = isLight;
-			if (!isLight) darkSprite = null;
-		}
 
 		// PASS 1: physics update + swirl — compute fx/fy once and cache
 		const N = allDots.length;
@@ -394,18 +339,7 @@ const total = size + pad * 2;
 			dot.fy = dot.y + dot.oy + Math.sin(angle) * swirlMag;
 		}
 
-		// PASS 2: dark background glow (light mode) — drawn from a cached sprite.
-		// The sprite is built once per theme. Swirl offsets are tiny (~7px) relative
-		// to the 16px soft blobs, so the static sprite is visually indistinguishable.
-		if (isLight) {
-			if (!darkSprite) darkSprite = buildDarkSprite();
-			ctx.globalCompositeOperation = "source-over";
-			// Smooth global fade so the dark layer doesn't pop in during entry
-			ctx.globalAlpha = globalEntry * globalEntry;
-			ctx.drawImage(darkSprite, 0, 0);
-		}
-
-		// PASS 3: glow layer (screen composite)
+		// PASS 2: glow layer (screen composite)
 		const glowPad = Math.max(1, Math.round(dpr));
 		const glowSize = dotSize + glowPad * 2;
 		ctx.globalCompositeOperation = "screen";
@@ -427,7 +361,7 @@ const total = size + pad * 2;
 			}
 		}
 
-		// PASS 4: main dots
+		// PASS 3: main dots
 		ctx.globalCompositeOperation = "source-over";
 		if (entryDone) {
 			ctx.globalAlpha = 1;
@@ -465,7 +399,6 @@ const total = size + pad * 2;
 		canvas.height = totalSize;
 
 		allDots = buildDots(img, imgSize, dpr);
-		darkSprite = null;
 		entryDone = false;
 
 		active = true;

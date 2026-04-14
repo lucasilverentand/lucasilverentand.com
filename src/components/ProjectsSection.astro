@@ -24,7 +24,6 @@
 		padding: 20px 22px 18px;
 		transition:
 			border-color 0.2s,
-			background 0.2s,
 			box-shadow 0.2s,
 			transform 0.2s;
 		position: relative;
@@ -43,7 +42,6 @@
 	}
 	.card:hover {
 		border-color: var(--color-border-2);
-		background: var(--color-bg-2);
 		transform: translateY(-2px);
 		box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
 	}
@@ -384,7 +382,7 @@
 		card.target = "_blank";
 		card.rel = "noopener";
 		card.className = "card fade-in";
-		card.style.transitionDelay = `${Math.min(index, 11) * 0.03}s`;
+		card.style.transitionDelay = `${Math.min(index, 11) * 0.02}s`;
 
 		const lang = tags.language[0];
 		const accent = lang ? (LANG_COLORS[lang] ?? "var(--color-border-2)") : "var(--color-border-2)";

@@ -30,7 +30,7 @@ function postHref(post: WritingEntry) {
 					<h2 class="font-display text-[32px] font-normal">Latest Writing</h2>
 					<a
 						href="/blog"
-						class="font-mono text-[13px] text-text-3 transition-colors duration-150 hover:text-text-1 shrink-0 pb-1"
+						class="font-mono text-[13px] text-text-faint transition-colors duration-150 hover:text-text-primary shrink-0 pb-1"
 					>
 						{remainingCount > 0 ? `View all (${totalCount})` : "View all"} &rarr;
 					</a>
@@ -59,23 +59,23 @@ function postHref(post: WritingEntry) {
 								)}
 								<div class="writing-card-body">
 									<div class="flex items-center justify-between gap-3">
-										<span class="font-mono text-[11px] text-text-3 uppercase tracking-wider truncate">
+										<span class="font-mono text-[11px] text-text-faint uppercase tracking-wider truncate">
 											{post.source ?? "Essay"}
 										</span>
 										<time
 											datetime={post.date.toISOString()}
-											class="font-mono text-[11px] text-text-3 whitespace-nowrap shrink-0"
+											class="font-mono text-[11px] text-text-faint whitespace-nowrap shrink-0"
 										>
 											{formatDate(post.date)}
 										</time>
 									</div>
-									<h3 class="font-display text-[22px] leading-[1.15] text-text-1 mt-4 line-clamp-3">
+									<h3 class="font-display text-[22px] leading-[1.15] text-text-primary mt-4 line-clamp-3">
 										{post.title}
 									</h3>
-									<p class="text-[13.5px] leading-relaxed text-text-2 mt-3 line-clamp-3">
+									<p class="text-[13.5px] leading-relaxed text-text-muted mt-3 line-clamp-3">
 										{post.description}
 									</p>
-									<span class="font-mono text-[12px] text-text-2 mt-auto pt-5 inline-flex items-center gap-1.5">
+									<span class="font-mono text-[12px] text-text-muted mt-auto pt-5 inline-flex items-center gap-1.5">
 										Read {post.externalUrl ? "→↗" : "→"}
 									</span>
 								</div>
@@ -83,13 +83,13 @@ function postHref(post: WritingEntry) {
 						))}
 						<a href="/blog" class="writing-card writing-card-cta fade-in">
 							<div class="flex flex-col h-full justify-center items-center text-center gap-3">
-								<span class="font-mono text-[11px] text-text-3 uppercase tracking-wider">
+								<span class="font-mono text-[11px] text-text-faint uppercase tracking-wider">
 									The Archive
 								</span>
-								<p class="text-[14px] leading-relaxed text-text-2 max-w-[220px]">
+								<p class="text-[14px] leading-relaxed text-text-muted max-w-55">
 									Deep dives on Rust, Swift, and shipping side projects — no fluff.
 								</p>
-								<span class="font-mono text-[13px] text-text-1 mt-1">
+								<span class="font-mono text-[13px] text-text-primary mt-1">
 									{remainingCount > 0 ? `Browse all ${totalCount}` : "Browse all"} &rarr;
 								</span>
 							</div>
@@ -97,8 +97,8 @@ function postHref(post: WritingEntry) {
 					</div>
 				</div>
 			</div>
-			<div class="max-w-[960px] mx-auto px-6 mt-6">
-				<div class="writing-nav flex items-center justify-center gap-[18px]">
+			<div class="max-w-240 mx-auto px-6 mt-6">
+				<div class="writing-nav flex items-center justify-center gap-4.5">
 					<button
 						type="button"
 						class="writing-arrow"
@@ -245,9 +245,9 @@ function postHref(post: WritingEntry) {
 		flex-direction: column;
 		flex: 0 0 300px;
 		min-height: 220px;
-		border: 1px solid var(--color-border);
+		border: 1px solid var(--color-border-subtle);
 		border-radius: 14px;
-		background: var(--color-bg-1);
+		background: var(--color-surface-raised);
 		transition:
 			border-color 0.2s,
 			background 0.2s,
@@ -267,8 +267,8 @@ function postHref(post: WritingEntry) {
 		width: 100%;
 		aspect-ratio: 16 / 9;
 		overflow: hidden;
-		background: var(--color-bg-2);
-		border-bottom: 1px solid var(--color-border);
+		background: var(--color-surface-raised);
+		border-bottom: 1px solid var(--color-border-subtle);
 	}
 	:global(.writing-card-cover) img {
 		width: 100%;
@@ -282,17 +282,17 @@ function postHref(post: WritingEntry) {
 		transform: scale(1.04);
 	}
 	:global(.writing-card):hover {
-		border-color: var(--color-border-2);
+		border-color: var(--color-border-strong);
 		transform: translateY(-2px);
 		box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
 	}
 	:global(.writing-card-cta) {
 		padding: 20px 22px;
-		background: var(--color-bg-2);
+		background: var(--color-surface-raised);
 		border-style: dashed;
 	}
 	:global(.writing-card-cta):hover {
-		background: var(--color-bg-3);
+		background: var(--color-surface-elevated);
 	}
 	@media (max-width: 640px) {
 		:global(.writing-card) {
@@ -306,9 +306,9 @@ function postHref(post: WritingEntry) {
 		width: 38px;
 		height: 38px;
 		border-radius: 999px;
-		border: 1px solid var(--color-border);
-		background: var(--color-bg-1);
-		color: var(--color-text-1);
+		border: 1px solid var(--color-border-subtle);
+		background: var(--color-surface);
+		color: var(--color-text-primary);
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
@@ -321,8 +321,8 @@ function postHref(post: WritingEntry) {
 			box-shadow 0.2s;
 	}
 	.writing-arrow:hover:not(:disabled) {
-		background: var(--color-bg-2);
-		border-color: var(--color-border-2);
+		background: var(--color-surface-raised);
+		border-color: var(--color-border-strong);
 	}
 	.writing-arrow:active:not(:disabled) {
 		transform: scale(0.92);
@@ -335,7 +335,7 @@ function postHref(post: WritingEntry) {
 		width: 7px;
 		height: 7px;
 		border-radius: 999px;
-		background: var(--color-border-2, var(--color-border));
+		background: var(--color-border-strong);
 		border: 0;
 		padding: 0;
 		cursor: pointer;
@@ -345,10 +345,10 @@ function postHref(post: WritingEntry) {
 			transform 0.25s;
 	}
 	.writing-dots :global(.writing-dot):hover {
-		background: var(--color-text-3);
+		background: var(--color-text-faint);
 	}
 	.writing-dots :global(.writing-dot[aria-selected="true"]) {
-		background: var(--color-text-1);
+		background: var(--color-text-primary);
 		width: 22px;
 	}
 </style>

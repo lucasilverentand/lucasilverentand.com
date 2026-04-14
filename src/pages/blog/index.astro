@@ -30,10 +30,10 @@ function postHref(post: (typeof posts)[number]) {
 >
 	<main>
 		<section class="pt-25 pb-15">
-			<div class="max-w-[960px] mx-auto px-6">
+			<div class="max-w-240 mx-auto px-6">
 				<a
 					href="/"
-					class="inline-block font-mono text-[13px] text-text-3 mb-8 transition-colors duration-150 hover:text-text-1"
+					class="inline-block font-mono text-[13px] text-text-faint mb-8 transition-colors duration-150 hover:text-text-primary"
 					>&larr; Back to home</a
 				>
 				<h1
@@ -41,52 +41,65 @@ function postHref(post: (typeof posts)[number]) {
 				>
 					My Writing
 				</h1>
-				<p class="text-[17px] text-text-2 leading-relaxed">
+				<p class="text-[17px] text-text-muted leading-relaxed">
 					All of my writing in one place: all my articles, newsletter, and other published writing.
 				</p>
 			</div>
 		</section>
 
 		<section class="pb-20">
-			<div class="max-w-[960px] mx-auto px-6">
+			<div class="max-w-240 mx-auto px-6">
 				{
 					posts.map((post, i) => (
 						<a
 							href={postHref(post)}
 							class:list={[
-								"block py-7 border-b border-border transition-opacity duration-150 hover:opacity-80",
+								"flex items-start gap-5 py-7 border-b border-border-subtle transition-opacity duration-150 hover:opacity-80",
 								i === 0 && "border-t",
 							]}
 							target={post.externalUrl ? "_blank" : undefined}
 							rel={post.externalUrl ? "noopener noreferrer" : undefined}
 						>
-							<div class="flex items-center flex-wrap gap-y-2 mb-2.5 min-h-3.5">
-								{post.source && (
-									<>
-										<SourceBadge source={post.source} />
-										<span class="font-mono text-xs text-text-3 leading-none inline-flex items-center justify-center mx-2.5">
-											&middot;
-										</span>
-									</>
+							<div class="flex-1 min-w-0">
+								<div class="flex items-center flex-wrap gap-y-2 mb-2.5 min-h-3.5">
+									{post.source && (
+										<>
+											<SourceBadge source={post.source} />
+											<span class="font-mono text-xs text-text-faint leading-none inline-flex items-center justify-center mx-2.5">
+												&middot;
+											</span>
+										</>
+									)}
+									<time
+										datetime={post.date.toISOString()}
+										class="font-mono text-xs text-text-faint leading-none inline-flex items-center"
+									>
+										{formatDate(post.date)}
+									</time>
+								</div>
+								<h2 class="font-display text-[26px] font-normal leading-snug mb-2">{post.title}</h2>
+								<p class="text-[15px] leading-relaxed text-text-muted max-w-[640px]">
+									{post.description}
+								</p>
+								{visibleTags(post).length > 0 && (
+									<div class="flex flex-wrap gap-2 mt-4 max-w-[720px] max-sm:gap-1.5">
+										{visibleTags(post).map((tag) => (
+											<span class="font-mono text-[11px] max-sm:text-[10px] text-text-muted bg-surface-raised border border-border-subtle px-2.5 max-sm:px-2 py-1 rounded-full leading-tight break-all">
+												{tag}
+											</span>
+										))}
+									</div>
 								)}
-								<time
-									datetime={post.date.toISOString()}
-									class="font-mono text-xs text-text-3 leading-none inline-flex items-center"
-								>
-									{formatDate(post.date)}
-								</time>
 							</div>
-							<h2 class="font-display text-[26px] font-normal leading-snug mb-2">{post.title}</h2>
-							<p class="text-[15px] leading-relaxed text-text-2 max-w-[640px]">
-								{post.description}
-							</p>
-							{visibleTags(post).length > 0 && (
-								<div class="flex flex-wrap gap-2 mt-4 max-w-[720px] max-sm:gap-1.5">
-									{visibleTags(post).map((tag) => (
-										<span class="font-mono text-[11px] max-sm:text-[10px] text-text-2 bg-bg-2 border border-border px-2.5 max-sm:px-2 py-1 rounded-full leading-tight break-all">
-											{tag}
-										</span>
-									))}
+							{post.image && (
+								<div class="hidden sm:block shrink-0 w-36 aspect-[16/10] rounded-lg overflow-hidden bg-surface-raised border border-border-subtle mt-1">
+									<img
+										src={post.image}
+										alt=""
+										loading="lazy"
+										decoding="async"
+										class="w-full h-full object-cover"
+									/>
 								</div>
 							)}
 						</a>
@@ -95,7 +108,7 @@ function postHref(post: (typeof posts)[number]) {
 
 				{
 					posts.length === 0 && (
-						<p class="text-[15px] text-text-3 py-10">No posts yet. Check back soon.</p>
+						<p class="text-[15px] text-text-faint py-10">No posts yet. Check back soon.</p>
 					)
 				}
 			</div>

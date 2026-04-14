@@ -9,15 +9,15 @@ import Footer from "../components/Footer.astro";
 >
 	<main class="flex flex-col items-center px-6 pt-12 pb-20 min-h-[calc(100vh-52px-85px)]">
 		<div
-			class="canvas-wrap relative w-[min(640px,88vw)] aspect-square rounded-[14px] overflow-hidden bg-bg border border-border"
+			class="canvas-wrap relative w-[min(640px,88vw)] aspect-square rounded-[14px] overflow-hidden bg-surface border border-border-subtle"
 		>
 			<canvas id="c" class="w-full h-full block cursor-crosshair"></canvas>
 			<div
 				id="overlay"
-				class="absolute inset-0 flex flex-col items-center justify-center gap-5 bg-bg transition-opacity duration-800 z-2"
+				class="absolute inset-0 flex flex-col items-center justify-center gap-5 bg-surface transition-opacity duration-800 z-2"
 			>
 				<div id="loader">
-					<p id="status" class="font-mono text-[13px] text-text-2 text-center">
+					<p id="status" class="font-mono text-[13px] text-text-muted text-center">
 						Drop a photo to begin
 					</p>
 					<div class="bar w-[220px] h-0.5 bg-border rounded-sm overflow-hidden" id="bar" hidden>
@@ -27,7 +27,7 @@ import Footer from "../components/Footer.astro";
 				<label id="drop-zone" class="cursor-pointer">
 					<input type="file" accept="image/*" id="file" class="hidden" />
 					<span
-						class="block font-mono text-[13px] text-text-3 border border-dashed border-border-2 px-7 py-3.5 rounded-lg transition-[border-color,color] duration-150 hover:border-text-3 hover:text-text-2"
+						class="block font-mono text-[13px] text-text-faint border border-dashed border-border-strong px-7 py-3.5 rounded-lg transition-[border-color,color] duration-150 hover:border-text-faint hover:text-text-muted"
 						>Drop photo here or click to select</span
 					>
 				</label>
@@ -35,7 +35,7 @@ import Footer from "../components/Footer.astro";
 		</div>
 		<div class="text-center mt-7 max-w-[460px]">
 			<h1 class="font-display text-[32px] font-normal mb-2">Dithered Depth</h1>
-			<p class="text-sm leading-relaxed text-text-3">
+			<p class="text-sm leading-relaxed text-text-faint">
 				Bayer-matrix ordered dithering with AI depth estimation driving per-layer parallax. Move
 				your mouse across the portrait.
 			</p>
@@ -51,11 +51,11 @@ import Footer from "../components/Footer.astro";
 		pointer-events: none;
 	}
 	.canvas-wrap.dragover #overlay {
-		background: var(--color-bg-2);
+		background: var(--color-surface-raised);
 	}
 	.canvas-wrap.dragover .drop-label {
 		border-color: var(--color-accent);
-		color: var(--color-text-1);
+		color: var(--color-text-primary);
 	}
 </style>
 

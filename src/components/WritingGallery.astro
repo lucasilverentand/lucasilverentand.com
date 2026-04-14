@@ -39,10 +39,11 @@ function postHref(post: WritingEntry) {
 			<div class="writing-gallery-wrap relative">
 				<div class="writing-gallery">
 					<div class="writing-gallery-track">
-						{posts.map((post) => (
+						{posts.map((post, i) => (
 							<a
 								href={postHref(post)}
 								class="writing-card fade-in"
+								data-delay={0.1 + i * 0.08}
 								target={post.externalUrl ? "_blank" : undefined}
 								rel={post.externalUrl ? "noopener noreferrer" : undefined}
 							>
@@ -81,7 +82,7 @@ function postHref(post: WritingEntry) {
 								</div>
 							</a>
 						))}
-						<a href="/blog" class="writing-card writing-card-cta fade-in">
+						<a href="/blog" class="writing-card writing-card-cta fade-in" data-delay={0.1 + posts.length * 0.08}>
 							<div class="flex flex-col h-full justify-center items-center text-center gap-3">
 								<span class="font-mono text-[11px] text-text-faint uppercase tracking-wider">
 									The Archive

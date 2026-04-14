@@ -60,41 +60,47 @@ const canonicalUrl = new URL(Astro.url.pathname, Astro.site).href;
 
 <script>
 	// Site-wide reveal-on-scroll observer for `.fade-in` elements.
-	// Batches elements that enter the viewport in the same frame and
-	// staggers them top-to-bottom with incremental transition-delays.
-	// Components that create cards dynamically can call
-	// `window.__fadeInObserver?.observe(el)` to opt those in.
+	// Batches elements entering the viewport in the same frame and
+	// staggers them top-to-bottom via transition-delay.
+	// Elements with data-delay own their stagger (cards, galleries).
+	// Re-animates when elements scroll back into view.
 
-	const STAGGER_STEP = 0.07; // seconds between each element in a batch
-	const MAX_DELAY = 0.6; // cap so late elements don't feel sluggish
-	const CLEANUP_MS = 1200; // remove delay after transition settles
+	const STAGGER_STEP = 0.07; // seconds between batch elements
+	const MAX_DELAY = 0.6;
 
 	let pending: Element[] = [];
 	let rafScheduled = false;
+	const cleanupTimers = new WeakMap<Element, number>();
+
+	function getDelay(el: HTMLElement, batchIndex: number): number {
+		const own = el.dataset.delay;
+		if (own) return parseFloat(own);
+		return Math.min(batchIndex * STAGGER_STEP, MAX_DELAY);
+	}
 
 	function flushBatch() {
 		rafScheduled = false;
 		if (!pending.length) return;
 
-		// Sort by vertical position so top elements animate first
-		const batch = pending
-			.map((el) => ({ el, top: el.getBoundingClientRect().top }))
-			.sort((a, b) => a.top - b.top);
-
+		const batch = [...pending];
 		pending = [];
 
 		for (let i = 0; i < batch.length; i++) {
-			const el = batch[i].el as HTMLElement;
-			const delay = Math.min(i * STAGGER_STEP, MAX_DELAY);
-			el.style.setProperty("--reveal-delay", `${delay}s`);
-			el.classList.add("visible");
-			observer.unobserve(el);
+			const el = batch[i] as HTMLElement;
 
-			// Clean up the delay after animation finishes so it doesn't
-			// interfere with hover/filter transitions later
-			setTimeout(() => {
-				el.style.removeProperty("--reveal-delay");
-			}, (delay + 0.6) * 1000 + CLEANUP_MS);
+			const prev = cleanupTimers.get(el);
+			if (prev) clearTimeout(prev);
+
+			const own = el.dataset.delay;
+			const delay = own ? parseFloat(own) : Math.random() * 0.3;
+			el.style.animationDelay = `${delay}s`;
+			el.classList.add("visible");
+
+			// Clear delay after animation finishes
+			const timer = window.setTimeout(() => {
+				cleanupTimers.delete(el);
+			}, (delay + 0.7) * 1000);
+			cleanupTimers.set(el, timer);
 		}
 	}
 
@@ -103,11 +109,22 @@ const canonicalUrl = new URL(Astro.url.pathname, Astro.site).href;
 			for (const entry of entries) {
 				if (entry.isIntersecting) {
 					pending.push(entry.target);
+				} else {
+					const el = entry.target as HTMLElement;
+					const timer = cleanupTimers.get(el);
+					if (timer) {
+						clearTimeout(timer);
+						cleanupTimers.delete(el);
+					}
+					el.classList.remove("visible");
+					el.style.animationDelay = "";
 				}
 			}
 			if (pending.length && !rafScheduled) {
 				rafScheduled = true;
-				requestAnimationFrame(flushBatch);
+				// Double rAF: first frame paints the hidden state (opacity 0,
+				// blur), second frame adds .visible so the transition plays.
+				requestAnimationFrame(() => requestAnimationFrame(flushBatch));
 			}
 		},
 		{ threshold: 0.08, rootMargin: "0px 0px -30px 0px" },

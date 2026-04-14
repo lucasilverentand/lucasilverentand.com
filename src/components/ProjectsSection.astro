@@ -30,24 +30,10 @@
 		position: relative;
 		overflow: hidden;
 	}
-	.card::before {
-		content: "";
-		position: absolute;
-		top: 0;
-		left: 0;
-		right: 0;
-		height: 2px;
-		background: var(--card-accent, var(--color-border-subtle));
-		opacity: 0;
-		transition: opacity 0.2s;
-	}
 	.card:hover {
 		border-color: var(--color-border-strong);
 		transform: translateY(-2px);
 		box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
-	}
-	.card:hover::before {
-		opacity: 1;
 	}
 
 	/* Card inner elements */
@@ -385,8 +371,6 @@
 		card.className = "card fade-in";
 
 		const lang = tags.language[0];
-		const accent = lang ? (LANG_COLORS[lang] ?? "var(--color-border-strong)") : "var(--color-border-strong)";
-		card.style.setProperty("--card-accent", accent);
 
 		const header = document.createElement("div");
 		header.className = "card-header";

@@ -61,6 +61,21 @@
 	color-scheme: light;
 }
 
+/* ── Explicit dark overrides (for nested data-theme="dark" inside light) ── */
+[data-theme="light"] [data-theme="dark"] {
+	--color-surface: #080808;
+	--color-surface-raised: #0e0e0e;
+	--color-surface-elevated: #141414;
+	--color-border-subtle: #1e1e1e;
+	--color-border-strong: #2a2a2a;
+	--color-text-primary: #ededed;
+	--color-text-muted: #999999;
+	--color-text-faint: #555555;
+	--color-accent: #ff5c1a;
+	--color-accent-dim: rgba(255, 92, 26, 0.12);
+	--color-accent-glow: rgba(255, 92, 26, 0.25);
+}
+
 /* ── Base resets ── */
 @layer base {
 	:root {
@@ -117,16 +132,16 @@
 	.fade-in {
 		opacity: 0;
 		filter: blur(4px);
-		transform: scale(0.97);
+		transform: translateY(8px) scale(0.98);
 		transition:
-			opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1),
-			filter 0.5s cubic-bezier(0.16, 1, 0.3, 1),
-			transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+			opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1) var(--reveal-delay, 0s),
+			filter 0.55s cubic-bezier(0.16, 1, 0.3, 1) var(--reveal-delay, 0s),
+			transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) var(--reveal-delay, 0s);
 	}
 	.fade-in.visible {
 		opacity: 1;
 		filter: blur(0);
-		transform: scale(1);
+		transform: translateY(0) scale(1);
 	}
 	.fade-out {
 		opacity: 0;
@@ -136,6 +151,19 @@
 			opacity 0.2s cubic-bezier(0.4, 0, 1, 1),
 			filter 0.2s cubic-bezier(0.4, 0, 1, 1),
 			transform 0.2s cubic-bezier(0.4, 0, 1, 1);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.fade-in {
+			transition: opacity 0.3s ease;
+			transform: none !important;
+			filter: none !important;
+		}
+		.fade-out {
+			transition: opacity 0.15s ease;
+			transform: none !important;
+			filter: none !important;
+		}
 	}
 }
 

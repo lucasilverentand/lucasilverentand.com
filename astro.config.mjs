@@ -4,6 +4,7 @@ import icon from "astro-icon";
 import { defineConfig } from "astro/config";
 
 export default defineConfig({
+	server: { port: 41920 },
 	output: "static",
 	site: "https://lucasilverentand.com",
 	integrations: [icon(), sitemap()],

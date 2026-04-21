@@ -1,12 +1,143 @@
-<section class="pt-16 pb-20 border-t border-border-subtle">
+---
+import { getCollection } from "astro:content";
+
+const projects = (await getCollection("projects", ({ data }) => !data.draft)).sort((a, b) => {
+	if (a.data.featured !== b.data.featured) return a.data.featured ? -1 : 1;
+	return b.data.date.getTime() - a.data.date.getTime();
+});
+
+type Category = "type" | "framework" | "language";
+
+const categories: { key: Category; label: string }[] = [
+	{ key: "type", label: "Type" },
+	{ key: "framework", label: "Framework" },
+	{ key: "language", label: "Language" },
+];
+
+const categoryValues = new Map<Category, Map<string, number>>();
+for (const { key } of categories) categoryValues.set(key, new Map());
+for (const project of projects) {
+	for (const { key } of categories) {
+		const bucket = categoryValues.get(key);
+		if (!bucket) continue;
+		for (const value of project.data.tags[key]) {
+			bucket.set(value, (bucket.get(value) ?? 0) + 1);
+		}
+	}
+}
+
+function formatDate(date: Date) {
+	return date.toLocaleDateString("en-US", { year: "numeric", month: "short" });
+}
+
+function serializeTags(tags: (typeof projects)[number]["data"]["tags"]) {
+	return [
+		...tags.type.map((t) => `type:${t}`),
+		...tags.framework.map((f) => `framework:${f}`),
+		...tags.language.map((l) => `language:${l}`),
+	].join(" ");
+}
+---
+
+<section id="projects" class="pt-16 pb-20 border-t border-border-subtle">
 	<div class="max-w-240 mx-auto px-6">
 		<div class="flex items-baseline gap-3 mb-6 fade-in">
 			<h2 class="font-display text-[32px] font-normal">Projects</h2>
-			<span id="projects-count" class="font-mono text-[13px] text-text-faint"></span>
+			<span id="projects-count" class="font-mono text-[13px] text-text-faint"
+				>{projects.length}</span
+			>
 		</div>
-		<div id="filter-bar" class="flex flex-wrap items-center gap-2 mb-7 pb-6 border-b border-border-subtle fade-in">
+		<div
+			id="filter-bar"
+			class="flex flex-wrap items-center gap-2 mb-7 pb-6 border-b border-border-subtle fade-in"
+		>
+			{
+				categories.map(({ key, label }) => {
+					const values = categoryValues.get(key);
+					if (!values || values.size === 0) return null;
+					const sorted = [...values.entries()].sort((a, b) => b[1] - a[1]);
+					return (
+						<div class="filter-dropdown" data-cat={key}>
+							<button type="button" class="filter-trigger">
+								<span>{label}</span>
+								<span class="trigger-count" style="display:none;" />
+								<svg
+									class="chevron"
+									width="12"
+									height="12"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="2"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+								>
+									<path d="M6 9l6 6 6-6" />
+								</svg>
+							</button>
+							<div class="filter-menu">
+								{sorted.map(([value, count]) => (
+									<button
+										type="button"
+										class="filter-option"
+										data-value={value}
+										data-cat={key}
+									>
+										<span class="check">
+											<svg
+												width="10"
+												height="10"
+												viewBox="0 0 24 24"
+												fill="none"
+												stroke="var(--color-surface)"
+												stroke-width="3"
+												stroke-linecap="round"
+												stroke-linejoin="round"
+											>
+												<path d="M20 6L9 17l-5-5" />
+											</svg>
+										</span>
+										{key === "language" && <span class="opt-dot" data-lang={value} />}
+										<span>{value}</span>
+										<span class="opt-count">{count}</span>
+									</button>
+								))}
+							</div>
+						</div>
+					);
+				})
+			}
 		</div>
 		<div id="projects-grid" class="grid grid-cols-3 gap-3 max-md:grid-cols-2 max-sm:grid-cols-1">
+			{
+				projects.map((project) => {
+					const language = project.data.tags.language[0];
+					return (
+						<a
+							href={`/projects/${project.id}`}
+							class="card fade-in"
+							data-tags={serializeTags(project.data.tags)}
+						>
+							<div class="card-header">
+								<span class="name">{project.data.name}</span>
+							</div>
+							<p>{project.data.description}</p>
+							<div class="card-footer">
+								{language && (
+									<span class="lang" data-lang={language}>
+										<span class="dot" />
+										{language}
+									</span>
+								)}
+								{project.data.owner !== "lucasilverentand" && (
+									<span class="card-owner">{project.data.owner}</span>
+								)}
+								<span class="card-updated">{formatDate(project.data.date)}</span>
+							</div>
+						</a>
+					);
+				})
+			}
 		</div>
 	</div>
 </section>
@@ -29,6 +160,8 @@
 			transform 0.2s;
 		position: relative;
 		overflow: hidden;
+		color: inherit;
+		text-decoration: none;
 	}
 	.card:hover {
 		border-color: var(--color-border-strong);
@@ -52,15 +185,6 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
-	}
-	.card .stars {
-		display: flex;
-		align-items: center;
-		gap: 4px;
-		font-family: var(--font-mono);
-		font-size: 12px;
-		color: var(--color-text-faint);
-		flex-shrink: 0;
 	}
 	.card p {
 		font-size: 13px;
@@ -90,7 +214,7 @@
 		width: 7px;
 		height: 7px;
 		border-radius: 50%;
-		background: var(--c);
+		background: var(--c, var(--color-text-faint));
 	}
 	.card-owner {
 		font-family: var(--font-mono);
@@ -110,6 +234,9 @@
 	}
 	.card-owner + .card-updated {
 		margin-left: 0;
+	}
+	.card[data-hidden="true"] {
+		display: none;
 	}
 
 	/* Filter dropdown */
@@ -145,6 +272,17 @@
 	}
 	.filter-trigger.open .chevron {
 		transform: rotate(180deg);
+	}
+	.trigger-count {
+		font-size: 10px;
+		background: var(--color-text-primary);
+		color: var(--color-surface);
+		border-radius: 999px;
+		min-width: 16px;
+		height: 16px;
+		line-height: 16px;
+		text-align: center;
+		padding: 0 4px;
 	}
 	.filter-menu {
 		position: absolute;
@@ -212,6 +350,7 @@
 		height: 7px;
 		border-radius: 50%;
 		flex-shrink: 0;
+		background: var(--c, var(--color-text-faint));
 	}
 	.filter-option .opt-count {
 		font-size: 11px;
@@ -276,206 +415,79 @@
 		markdown: "#083fa1",
 	};
 
-	interface Tags {
-		type: string[];
-		framework: string[];
-		language: string[];
-	}
-
-	interface Project {
-		name: string;
-		description: string | null;
-		owner: string;
-		url: string | null;
-		homepage: string | null;
-		language: string | null;
-		stars: number;
-		topics: string[];
-		updated_at: string | null;
-		source: "github" | "published-app";
-		platform?: string;
-		app_store_url?: string;
-		tags?: Tags;
-	}
-
-	const PROJECTS_URL =
-		"https://raw.githubusercontent.com/lucasilverentand/lucasilverentand/main/projects.json";
-
 	type Category = "type" | "framework" | "language";
 
-	let allProjects: Project[] = [];
 	const activeFilters: Record<Category, Set<string>> = {
 		type: new Set(),
 		framework: new Set(),
 		language: new Set(),
 	};
 
-	function timeAgo(dateStr: string): string {
-		const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
-		const intervals: [number, string][] = [
-			[31536000, "y"],
-			[2592000, "mo"],
-			[604800, "w"],
-			[86400, "d"],
-			[3600, "h"],
-		];
-		for (const [secs, label] of intervals) {
-			const count = Math.floor(seconds / secs);
-			if (count >= 1) return `${count}${label} ago`;
+	function applyLangColor(el: HTMLElement) {
+		const lang = el.dataset.lang;
+		if (lang && LANG_COLORS[lang]) {
+			el.style.setProperty("--c", LANG_COLORS[lang]);
 		}
-		return "just now";
 	}
 
-	function getTags(p: Project): Tags {
-		if (p.tags) return p.tags;
-		return {
-			type: [],
-			framework: [],
-			language: p.language ? [p.language.toLowerCase()] : [],
+	for (const el of document.querySelectorAll<HTMLElement>("[data-lang]")) {
+		applyLangColor(el);
+	}
+
+	function parseCardTags(card: HTMLElement): Record<Category, Set<string>> {
+		const raw = card.dataset.tags ?? "";
+		const out: Record<Category, Set<string>> = {
+			type: new Set(),
+			framework: new Set(),
+			language: new Set(),
 		};
-	}
-
-	function matchesFilters(p: Project): boolean {
-		const tags = getTags(p);
-		const matchType =
-			activeFilters.type.size === 0 || tags.type.some((t) => activeFilters.type.has(t));
-		const matchFramework =
-			activeFilters.framework.size === 0 ||
-			tags.framework.some((f) => activeFilters.framework.has(f));
-		const matchLanguage =
-			activeFilters.language.size === 0 || tags.language.some((l) => activeFilters.language.has(l));
-		return matchType && matchFramework && matchLanguage;
-	}
-
-	function createStarSvg(): SVGSVGElement {
-		const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-		svg.setAttribute("width", "12");
-		svg.setAttribute("height", "12");
-		svg.setAttribute("viewBox", "0 0 24 24");
-		svg.setAttribute("fill", "currentColor");
-		const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-		path.setAttribute(
-			"d",
-			"M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z",
-		);
-		svg.appendChild(path);
-		return svg;
-	}
-
-	function createCard(p: Project, index: number): HTMLAnchorElement {
-		const tags = getTags(p);
-		const card = document.createElement("a");
-		card.href = p.url ?? p.homepage ?? p.app_store_url ?? "#";
-		card.target = "_blank";
-		card.rel = "noopener";
-		card.className = "card fade-in";
-
-		const lang = tags.language[0];
-
-		const header = document.createElement("div");
-		header.className = "card-header";
-		const name = document.createElement("span");
-		name.className = "name";
-		name.textContent = p.name;
-		header.appendChild(name);
-
-		if (p.stars > 0) {
-			const stars = document.createElement("span");
-			stars.className = "stars";
-			stars.appendChild(createStarSvg());
-			stars.appendChild(document.createTextNode(String(p.stars)));
-			header.appendChild(stars);
+		for (const token of raw.split(/\s+/)) {
+			if (!token) continue;
+			const idx = token.indexOf(":");
+			if (idx === -1) continue;
+			const cat = token.slice(0, idx) as Category;
+			const value = token.slice(idx + 1);
+			if (out[cat]) out[cat].add(value);
 		}
-
-		card.appendChild(header);
-
-		const desc = document.createElement("p");
-		desc.textContent = p.description ?? "";
-		card.appendChild(desc);
-
-		const footer = document.createElement("div");
-		footer.className = "card-footer";
-
-		if (lang) {
-			const langEl = document.createElement("span");
-			langEl.className = "lang";
-			langEl.style.setProperty("--c", LANG_COLORS[lang] ?? "var(--color-text-faint)");
-			const dot = document.createElement("span");
-			dot.className = "dot";
-			langEl.appendChild(dot);
-			langEl.appendChild(document.createTextNode(lang));
-			footer.appendChild(langEl);
-		}
-
-		if (p.owner !== "lucasilverentand") {
-			const owner = document.createElement("span");
-			owner.className = "card-owner";
-			owner.textContent = p.owner;
-			footer.appendChild(owner);
-		}
-
-		if (p.updated_at) {
-			const updated = document.createElement("span");
-			updated.className = "card-updated";
-			updated.textContent = timeAgo(p.updated_at);
-			footer.appendChild(updated);
-		}
-
-		card.appendChild(footer);
-		return card;
+		return out;
 	}
 
-	function createCheckSvg(): SVGSVGElement {
-		const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-		svg.setAttribute("width", "10");
-		svg.setAttribute("height", "10");
-		svg.setAttribute("viewBox", "0 0 24 24");
-		svg.setAttribute("fill", "none");
-		svg.setAttribute("stroke", "var(--color-surface)");
-		svg.setAttribute("stroke-width", "3");
-		svg.setAttribute("stroke-linecap", "round");
-		svg.setAttribute("stroke-linejoin", "round");
-		const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-		path.setAttribute("d", "M20 6L9 17l-5-5");
-		svg.appendChild(path);
-		return svg;
-	}
-
-	function createChevronSvg(): SVGSVGElement {
-		const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-		svg.setAttribute("width", "12");
-		svg.setAttribute("height", "12");
-		svg.setAttribute("viewBox", "0 0 24 24");
-		svg.setAttribute("fill", "none");
-		svg.setAttribute("stroke", "currentColor");
-		svg.setAttribute("stroke-width", "2");
-		svg.setAttribute("stroke-linecap", "round");
-		svg.setAttribute("stroke-linejoin", "round");
-		svg.classList.add("chevron");
-		const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-		path.setAttribute("d", "M6 9l6 6 6-6");
-		svg.appendChild(path);
-		return svg;
-	}
-
-	let openDropdown: HTMLElement | null = null;
-
-	function closeAllDropdowns() {
-		document.querySelectorAll(".filter-menu.open").forEach((m) => m.classList.remove("open"));
-		document.querySelectorAll(".filter-trigger.open").forEach((t) => t.classList.remove("open"));
-		openDropdown = null;
-	}
-
-	document.addEventListener("click", (e) => {
-		if (openDropdown && !openDropdown.contains(e.target as Node)) {
-			closeAllDropdowns();
+	function matches(card: HTMLElement): boolean {
+		const tags = parseCardTags(card);
+		for (const cat of ["type", "framework", "language"] as Category[]) {
+			const active = activeFilters[cat];
+			if (active.size === 0) continue;
+			let found = false;
+			for (const v of active) {
+				if (tags[cat].has(v)) {
+					found = true;
+					break;
+				}
+			}
+			if (!found) return false;
 		}
-	});
+		return true;
+	}
+
+	function updateGrid() {
+		const cards = document.querySelectorAll<HTMLElement>("#projects-grid .card");
+		let visible = 0;
+		for (const card of cards) {
+			if (matches(card)) {
+				card.removeAttribute("data-hidden");
+				visible++;
+			} else {
+				card.setAttribute("data-hidden", "true");
+			}
+		}
+		const countEl = document.getElementById("projects-count");
+		if (countEl) countEl.textContent = String(visible);
+	}
 
 	function renderChips() {
 		const bar = document.getElementById("filter-bar");
 		if (!bar) return;
-		bar.querySelectorAll(".filter-chip").forEach((c) => c.remove());
+		for (const chip of bar.querySelectorAll(".filter-chip")) chip.remove();
 
 		for (const cat of ["type", "framework", "language"] as Category[]) {
 			for (const value of activeFilters[cat]) {
@@ -501,7 +513,7 @@
 					activeFilters[cat].delete(value);
 					updateDropdownState(cat);
 					renderChips();
-					renderGrid();
+					updateGrid();
 				});
 
 				bar.appendChild(chip);
@@ -525,217 +537,66 @@
 			}
 		}
 
-		dropdown.querySelectorAll<HTMLButtonElement>(".filter-option").forEach((opt) => {
-			const val = opt.dataset.value!;
-			if (activeFilters[cat].has(val)) {
+		for (const opt of dropdown.querySelectorAll<HTMLElement>(".filter-option")) {
+			const val = opt.dataset.value;
+			if (val && activeFilters[cat].has(val)) {
 				opt.classList.add("checked");
 			} else {
 				opt.classList.remove("checked");
 			}
+		}
+	}
+
+	let openDropdown: HTMLElement | null = null;
+
+	function closeAllDropdowns() {
+		for (const m of document.querySelectorAll(".filter-menu.open")) m.classList.remove("open");
+		for (const t of document.querySelectorAll(".filter-trigger.open")) t.classList.remove("open");
+		openDropdown = null;
+	}
+
+	document.addEventListener("click", (e) => {
+		if (openDropdown && !openDropdown.contains(e.target as Node)) {
+			closeAllDropdowns();
+		}
+	});
+
+	for (const dropdown of document.querySelectorAll<HTMLElement>(".filter-dropdown")) {
+		const cat = dropdown.dataset.cat as Category | undefined;
+		if (!cat) continue;
+
+		const trigger = dropdown.querySelector<HTMLElement>(".filter-trigger");
+		const menu = dropdown.querySelector<HTMLElement>(".filter-menu");
+		if (!trigger || !menu) continue;
+
+		trigger.addEventListener("click", (e) => {
+			e.stopPropagation();
+			const isOpen = menu.classList.contains("open");
+			closeAllDropdowns();
+			if (!isOpen) {
+				menu.classList.add("open");
+				trigger.classList.add("open");
+				openDropdown = dropdown;
+			}
 		});
-	}
 
-	function buildFilterBar(projects: Project[]) {
-		const bar = document.getElementById("filter-bar");
-		if (!bar) return;
-
-		const categories: { key: Category; label: string }[] = [
-			{ key: "type", label: "Type" },
-			{ key: "framework", label: "Framework" },
-			{ key: "language", label: "Language" },
-		];
-
-		for (const cat of categories) {
-			const counts = new Map<string, number>();
-			for (const p of projects) {
-				const tags = getTags(p);
-				for (const val of tags[cat.key]) {
-					counts.set(val, (counts.get(val) ?? 0) + 1);
-				}
-			}
-
-			if (counts.size === 0) continue;
-
-			const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1]);
-
-			const dropdown = document.createElement("div");
-			dropdown.className = "filter-dropdown";
-			dropdown.dataset.cat = cat.key;
-
-			const trigger = document.createElement("button");
-			trigger.type = "button";
-			trigger.className = "filter-trigger";
-			trigger.appendChild(document.createTextNode(cat.label));
-
-			const countBadge = document.createElement("span");
-			countBadge.className = "trigger-count";
-			countBadge.style.cssText =
-				"display:none; font-size:10px; background:var(--color-text-primary); color:var(--color-surface); border-radius:999px; min-width:16px; height:16px; line-height:16px; text-align:center; padding:0 4px;";
-			trigger.appendChild(countBadge);
-
-			trigger.appendChild(createChevronSvg());
-			dropdown.appendChild(trigger);
-
-			const menu = document.createElement("div");
-			menu.className = "filter-menu";
-
-			for (const [value, count] of sorted) {
-				const opt = document.createElement("button");
-				opt.type = "button";
-				opt.className = "filter-option";
-				opt.dataset.value = value;
-
-				const check = document.createElement("span");
-				check.className = "check";
-				check.appendChild(createCheckSvg());
-				opt.appendChild(check);
-
-				if (cat.key === "language" && LANG_COLORS[value]) {
-					const dot = document.createElement("span");
-					dot.className = "opt-dot";
-					dot.style.background = LANG_COLORS[value];
-					opt.appendChild(dot);
-				}
-
-				opt.appendChild(document.createTextNode(value));
-
-				const countEl = document.createElement("span");
-				countEl.className = "opt-count";
-				countEl.textContent = String(count);
-				opt.appendChild(countEl);
-
-				opt.addEventListener("click", (e) => {
-					e.stopPropagation();
-					const set = activeFilters[cat.key];
-					if (set.has(value)) {
-						set.delete(value);
-						opt.classList.remove("checked");
-					} else {
-						set.add(value);
-						opt.classList.add("checked");
-					}
-					updateDropdownState(cat.key);
-					renderChips();
-					renderGrid();
-				});
-
-				menu.appendChild(opt);
-			}
-
-			dropdown.appendChild(menu);
-
-			trigger.addEventListener("click", (e) => {
+		for (const opt of dropdown.querySelectorAll<HTMLElement>(".filter-option")) {
+			const value = opt.dataset.value;
+			if (!value) continue;
+			opt.addEventListener("click", (e) => {
 				e.stopPropagation();
-				const isOpen = menu.classList.contains("open");
-				closeAllDropdowns();
-				if (!isOpen) {
-					menu.classList.add("open");
-					trigger.classList.add("open");
-					openDropdown = dropdown;
+				const set = activeFilters[cat];
+				if (set.has(value)) {
+					set.delete(value);
+					opt.classList.remove("checked");
+				} else {
+					set.add(value);
+					opt.classList.add("checked");
 				}
+				updateDropdownState(cat);
+				renderChips();
+				updateGrid();
 			});
-
-			bar.appendChild(dropdown);
 		}
 	}
-
-	let isAnimating = false;
-
-	function renderGrid(animate = true) {
-		const grid = document.getElementById("projects-grid");
-		const countEl = document.getElementById("projects-count");
-		if (!grid) return;
-
-		const filtered = allProjects.filter(matchesFilters);
-		if (countEl) countEl.textContent = `${filtered.length}`;
-		renderChips();
-
-		const existingCards = grid.querySelectorAll<HTMLElement>(".card");
-
-		if (!animate || existingCards.length === 0 || isAnimating) {
-			grid.replaceChildren();
-			const fadeObserver = (window as unknown as { __fadeInObserver?: IntersectionObserver })
-				.__fadeInObserver;
-			for (let i = 0; i < filtered.length; i++) {
-				const card = createCard(filtered[i], i);
-				grid.appendChild(card);
-				fadeObserver?.observe(card);
-			}
-			return;
-		}
-
-		isAnimating = true;
-
-		for (const card of existingCards) {
-			card.classList.add("fade-out");
-			card.classList.remove("visible");
-		}
-
-		setTimeout(() => {
-			grid.replaceChildren();
-
-			for (let i = 0; i < filtered.length; i++) {
-				const card = createCard(filtered[i], i);
-				card.classList.remove("fade-in");
-				card.style.opacity = "0";
-				card.style.filter = "blur(4px)";
-				card.style.transform = "scale(0.97)";
-				card.style.transition = "none";
-				grid.appendChild(card);
-			}
-
-			requestAnimationFrame(() => {
-				requestAnimationFrame(() => {
-					const cards = grid.querySelectorAll<HTMLElement>(".card");
-					for (let i = 0; i < cards.length; i++) {
-						const card = cards[i];
-						const delay = Math.min(i, 11) * 0.03;
-						card.style.transition = `opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s, filter 0.35s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s, transform 0.35s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s`;
-						card.style.opacity = "1";
-						card.style.filter = "blur(0)";
-						card.style.transform = "scale(1)";
-					}
-					setTimeout(() => {
-						const done = grid.querySelectorAll<HTMLElement>(".card");
-						for (const c of done) {
-							c.style.opacity = "";
-							c.style.filter = "";
-							c.style.transform = "";
-							c.style.transition = "";
-						}
-						isAnimating = false;
-					}, 400);
-				});
-			});
-		}, 200);
-	}
-
-	async function loadProjects() {
-		const grid = document.getElementById("projects-grid");
-		if (!grid) return;
-
-		try {
-			const res = await fetch(PROJECTS_URL);
-			const data: { projects: Project[] } = await res.json();
-
-			allProjects = data.projects
-				.filter((p) => p.name !== "lucasilverentand" && !p.name.startsWith("."))
-				.sort((a, b) => {
-					const da = a.updated_at ? new Date(a.updated_at).getTime() : 0;
-					const db = b.updated_at ? new Date(b.updated_at).getTime() : 0;
-					return db - da;
-				});
-
-			buildFilterBar(allProjects);
-			renderGrid(false);
-		} catch {
-			const msg = document.createElement("p");
-			msg.style.color = "var(--color-text-faint)";
-			msg.style.fontSize = "14px";
-			msg.textContent = "Failed to load projects.";
-			grid.appendChild(msg);
-		}
-	}
-
-	loadProjects();
 </script>

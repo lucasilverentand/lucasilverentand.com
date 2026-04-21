@@ -1,0 +1,34 @@
+---
+name: kustodian
+description: GitOps templating framework for Kubernetes with Flux CD — define templates in YAML, extend with plugins
+owner: lucasilverentand
+url: https://github.com/lucasilverentand/kustodian
+topics: [kubernetes, gitops, flux, templating, bun]
+tags:
+  type: [cli]
+  framework: []
+  language: [typescript]
+date: 2025-12-29
+featured: true
+---
+
+## Background
+
+kustodian is a TypeScript CLI (Bun) that takes declarative YAML templates and
+compiles them into ready-to-apply Kubernetes manifests that Flux CD can sync.
+It sits in the gap between raw Kustomize and full-blown Helm: enough structure
+to share primitives across clusters (homelab, prod, staging), but with
+plugins so I can drop in new shapes without forking the tool. It's what drives
+the Kubernetes side of my homelab in the silverswarm org.
+
+## What I learned
+
+{/* TODO: fill in — where Helm/Kustomize fall short, how to keep homelab and prod on the same rails. */}
+
+## Skills used
+
+{/* TODO: fill in — TypeScript + Bun, Kubernetes API shapes, Flux CD reconciliation model. */}
+
+## Skills developed
+
+{/* TODO: fill in — GitOps conventions, plugin API design, progressive rollout patterns. */}

@@ -1,0 +1,33 @@
+---
+name: pane
+description: Rust TUI agent manager with daemon, protocol, and terminal interface
+owner: lucasilverentand
+url: https://github.com/lucasilverentand/pane
+topics: [cli, tui, rust, claude-code, agent-management]
+tags:
+  type: [cli, app]
+  framework: []
+  language: [rust]
+date: 2026-02-04
+featured: true
+---
+
+## Background
+
+pane is a Rust TUI for running and supervising multiple Claude Code agents in
+parallel — each in its own worktree, each with its own task. It's three
+pieces: a background daemon that owns agent lifecycles, a wire protocol for
+talking to it, and a terminal UI that lets me tail logs, switch between
+sessions, and queue up work without juggling a dozen tmux panes.
+
+## What I learned
+
+{/* TODO: fill in — IPC design, TUI ergonomics, managing many concurrent long-running processes. */}
+
+## Skills used
+
+{/* TODO: fill in — Rust async (tokio), ratatui, unix domain sockets or named pipes. */}
+
+## Skills developed
+
+{/* TODO: fill in — what running many agents in parallel taught you about context and coordination. */}

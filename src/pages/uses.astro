@@ -1,0 +1,156 @@
+---
+import { Icon } from "astro-icon/components";
+import Layout from "../layouts/Layout.astro";
+import Footer from "../components/Footer.astro";
+import { uses } from "../data/uses";
+---
+
+<Layout
+	title="What I Use — Luca Silverentand"
+	description="The tools, languages, frameworks, and resources I use day-to-day for development, design, and productivity."
+>
+	<main>
+		<section class="pt-25 pb-10">
+			<div class="max-w-240 mx-auto px-6">
+				<a
+					href="/"
+					class="inline-block font-mono text-[13px] text-text-faint mb-8 transition-colors duration-150 hover:text-text-primary"
+					>&larr; Back to home</a
+				>
+				<h1
+					class="font-display text-[clamp(40px,6vw,64px)] font-normal leading-none tracking-tight mb-4 fade-in"
+				>
+					What I Use
+				</h1>
+				<p class="text-[17px] text-text-muted leading-relaxed fade-in">
+					The tools, languages, and resources I reach for every day.
+				</p>
+			</div>
+		</section>
+
+		<section class="pb-24">
+			<div class="max-w-240 mx-auto px-6">
+				{
+					uses.map((category) => (
+						<div class="mt-14 first:mt-0">
+							<h2 class="font-mono text-[11px] uppercase tracking-widest text-text-faint mb-1 fade-in">
+								{category.name}
+							</h2>
+							<div class="border-t border-border-subtle">
+								{category.tools.map((tool) =>
+									tool.url ? (
+										<a
+											href={tool.url}
+											target="_blank"
+											rel="noopener noreferrer"
+											class="group flex items-start gap-4 py-5 border-b border-border-subtle transition-opacity duration-150 hover:opacity-70 fade-in"
+										>
+											<div class="shrink-0 w-4 h-4 mt-[3px] text-text-faint flex items-center justify-center">
+												{tool.icon && <Icon name={tool.icon} size={16} />}
+											</div>
+											<div class="flex-1 min-w-0">
+												<div class="font-mono text-[14px] text-text-primary font-medium leading-snug">
+													{tool.name}
+												</div>
+												<div class="text-[14px] text-text-muted mt-0.5 leading-relaxed">
+													{tool.description}
+												</div>
+												{(tool.why || tool.how) && (
+													<dl class="mt-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 max-w-[680px]">
+														{tool.why && (
+															<>
+																<dt class="font-mono text-[10px] uppercase tracking-widest text-text-faint pt-[3px]">
+																	Why
+																</dt>
+																<dd class="text-[13px] leading-relaxed text-text-muted">
+																	{tool.why}
+																</dd>
+															</>
+														)}
+														{tool.how && (
+															<>
+																<dt class="font-mono text-[10px] uppercase tracking-widest text-text-faint pt-[3px]">
+																	How
+																</dt>
+																<dd class="text-[13px] leading-relaxed text-text-muted">
+																	{tool.how}
+																</dd>
+															</>
+														)}
+													</dl>
+												)}
+												{tool.note && (
+													<div class="font-mono text-[11px] text-text-faint mt-2 italic">
+														{tool.note}
+													</div>
+												)}
+											</div>
+											<svg
+												class="shrink-0 mt-[3px] text-text-faint opacity-0 group-hover:opacity-100 transition-opacity duration-150"
+												width="14"
+												height="14"
+												viewBox="0 0 24 24"
+												fill="none"
+												stroke="currentColor"
+												stroke-width="2"
+												stroke-linecap="round"
+												stroke-linejoin="round"
+											>
+												<path d="M7 17L17 7M17 7H7M17 7v10" />
+											</svg>
+										</a>
+									) : (
+										<div class="flex items-start gap-4 py-5 border-b border-border-subtle fade-in">
+											<div class="shrink-0 w-4 h-4 mt-[3px] text-text-faint flex items-center justify-center">
+												{tool.icon && <Icon name={tool.icon} size={16} />}
+											</div>
+											<div class="flex-1 min-w-0">
+												<div class="font-mono text-[14px] text-text-primary font-medium leading-snug">
+													{tool.name}
+												</div>
+												<div class="text-[14px] text-text-muted mt-0.5 leading-relaxed">
+													{tool.description}
+												</div>
+												{(tool.why || tool.how) && (
+													<dl class="mt-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 max-w-[680px]">
+														{tool.why && (
+															<>
+																<dt class="font-mono text-[10px] uppercase tracking-widest text-text-faint pt-[3px]">
+																	Why
+																</dt>
+																<dd class="text-[13px] leading-relaxed text-text-muted">
+																	{tool.why}
+																</dd>
+															</>
+														)}
+														{tool.how && (
+															<>
+																<dt class="font-mono text-[10px] uppercase tracking-widest text-text-faint pt-[3px]">
+																	How
+																</dt>
+																<dd class="text-[13px] leading-relaxed text-text-muted">
+																	{tool.how}
+																</dd>
+															</>
+														)}
+													</dl>
+												)}
+												{tool.note && (
+													<div class="font-mono text-[11px] text-text-faint mt-2 italic">
+														{tool.note}
+													</div>
+												)}
+											</div>
+										</div>
+									),
+								)}
+							</div>
+						</div>
+					))
+				}
+			</div>
+		</section>
+	</main>
+
+	<Footer />
+</Layout>

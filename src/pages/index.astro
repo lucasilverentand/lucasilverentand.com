@@ -7,6 +7,7 @@ import LunarPromo from "../components/LunarPromo.astro";
 import HeadHighPromo from "../components/HeadHighPromo.astro";
 import WritingGallery from "../components/WritingGallery.astro";
 import ProjectsSection from "../components/ProjectsSection.astro";
+import UsesStack from "../components/UsesStack.astro";
 import { getExternalArticles, toWritingEntry } from "../lib/writing";
 
 const allPosts = [
@@ -24,6 +25,7 @@ const recentPosts = allPosts.slice(0, 8);
 		<HeadHighPromo />
 		<WritingGallery posts={recentPosts} totalCount={allPosts.length} />
 		<ProjectsSection />
+		<UsesStack />
 	</main>
 
 	<Footer />

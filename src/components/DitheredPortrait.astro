@@ -14,12 +14,23 @@ const total = size + pad * 2;
 </div>
 
 <script type="module">
-	const SPACING = 1.5;
-	const DOT = 1.2;
-	const GAMMA = 0.398;
-	const SAT_BOOST = 1.02;
-	const BRIGHTNESS_LIFT = 1.2;
-	const HIGHLIGHT_MIX = 0;
+	// === Halftone parameters ===
+	// Every grid cell gets a dot; dot RADIUS scales with inkness signal.
+	// No thresholding, no dropout — tone comes from dot size, like print.
+	const SPACING = 1.9; // grid pitch in CSS px
+	const MAX_RADIUS = 1.05; // max dot radius in CSS px
+	const MIN_RADIUS = 0.28; // skip dots smaller than this (invisible)
+	const TONE_CURVE = 0.62; // gamma on inkness signal — lower = fatter mids
+
+	// === Color refinement (gentle) ===
+	// Halftone density handles "presence" via dot size, so we don't need
+	// the heavy saturation/lift stack anymore. Just a small nudge.
+	const COLOR_SAT_LIGHT = 1.32;
+	const COLOR_SAT_DARK = 1.22;
+	const COLOR_LIFT_LIGHT = 0.92; // tiny pre-darken so multiply lands with weight
+	const COLOR_LIFT_DARK = 1.12; // screen on dark bg benefits from brightness
+
+	// === Physics ===
 	const SWIRL_AMP = 3.5;
 	const SWIRL_SPEED = 0.25;
 	const POND_RADIUS = 80;
@@ -30,24 +41,14 @@ const total = size + pad * 2;
 	const RIPPLE_SPEED = 0.3;
 	const RIPPLE_WIDTH = 45;
 	const RIPPLE_STRENGTH = 32;
-	const RIPPLE_LIFE = 3500; // ms
+	const RIPPLE_LIFE = 3500;
 	const RANDOM_RIPPLE_MIN_GAP = 3200;
 	const RANDOM_RIPPLE_MAX_GAP = 7800;
 	const TWO_PI = Math.PI * 2;
-	// Entry animation: pure staggered fade, inside-out
-	const ENTRY_FADE = 0.9; // seconds per dot from invisible → visible
-	const ENTRY_MAX_DELAY = 0.95; // seconds until the last (outermost) dot starts
 
-	const BAYER = [
-		[0, 32, 8, 40, 2, 34, 10, 42],
-		[48, 16, 56, 24, 50, 18, 58, 26],
-		[12, 44, 4, 36, 14, 46, 6, 38],
-		[60, 28, 52, 20, 62, 30, 54, 22],
-		[3, 35, 11, 43, 1, 33, 9, 41],
-		[51, 19, 59, 27, 49, 17, 57, 25],
-		[15, 47, 7, 39, 13, 45, 5, 37],
-		[63, 31, 55, 23, 61, 29, 53, 21],
-	].map((r) => r.map((v) => v / 64));
+	// Entry animation: pure staggered fade, inside-out
+	const ENTRY_FADE = 0.9;
+	const ENTRY_MAX_DELAY = 0.95;
 
 	const canvas = document.getElementById("portrait-canvas");
 	const ctx = canvas.getContext("2d");
@@ -55,7 +56,6 @@ const total = size + pad * 2;
 	const fileInput = document.getElementById("portrait-file");
 
 	let allDots = [];
-	let dotSize = 2;
 	let padPx = 0;
 	let cursorPx = -9999;
 	let cursorPy = -9999;
@@ -66,6 +66,11 @@ const total = size + pad * 2;
 	let t = 0;
 	let nextRandomRippleMs = 0;
 	let entryDone = false;
+	// Cached for rebuilding dots on theme change without re-decoding.
+	let cachedImg = null;
+	let cachedImgSize = 0;
+	let cachedDpr = 1;
+	let cachedPixels = null;
 
 	function scheduleNextRandomRipple(now) {
 		return (
@@ -95,15 +100,28 @@ const total = size + pad * 2;
 		return x.getImageData(0, 0, size, size).data;
 	}
 
-	function boostColor(r, g, b) {
-		r = Math.min(255, r * BRIGHTNESS_LIFT);
-		g = Math.min(255, g * BRIGHTNESS_LIFT);
-		b = Math.min(255, b * BRIGHTNESS_LIFT);
+	const htmlEl = document.documentElement;
+	function isLight() {
+		return htmlEl.getAttribute("data-theme") === "light";
+	}
+
+	// Light-touch color processing. The halftone itself provides tonal
+	// density — brightness comes from dot SIZE, so we don't need to lift
+	// or slam saturation the way the threshold-based version did.
+	function processColor(r, g, b, light) {
+		const lift = light ? COLOR_LIFT_LIGHT : COLOR_LIFT_DARK;
+		const sat = light ? COLOR_SAT_LIGHT : COLOR_SAT_DARK;
+		r = Math.min(255, r * lift);
+		g = Math.min(255, g * lift);
+		b = Math.min(255, b * lift);
 		const avg = (r + g + b) / 3;
+		r = avg + (r - avg) * sat;
+		g = avg + (g - avg) * sat;
+		b = avg + (b - avg) * sat;
 		return [
-			Math.min(255, Math.max(0, Math.round(avg + (r - avg) * SAT_BOOST))),
-			Math.min(255, Math.max(0, Math.round(avg + (g - avg) * SAT_BOOST))),
-			Math.min(255, Math.max(0, Math.round(avg + (b - avg) * SAT_BOOST))),
+			Math.min(255, Math.max(0, Math.round(r))),
+			Math.min(255, Math.max(0, Math.round(g))),
+			Math.min(255, Math.max(0, Math.round(b))),
 		];
 	}
 
@@ -112,7 +130,6 @@ const total = size + pad * 2;
 		const lx = x - pad;
 		const ly = y - pad;
 		if (lx < 0 || ly < 0 || lx >= imgSize || ly >= imgSize) return false;
-		// Check corners
 		if (lx < radius && ly < radius) {
 			const dx = radius - lx,
 				dy = radius - ly;
@@ -137,37 +154,41 @@ const total = size + pad * 2;
 	}
 
 	function buildDots(img, imgSize, dpr) {
-		const px = samplePixels(img, imgSize);
-		const spacing = Math.round(SPACING * dpr);
-		dotSize = Math.round(DOT * dpr);
-		const radius = Math.round(CORNER_RADIUS * dpr);
+		const light = isLight();
+		if (!cachedPixels || cachedImgSize !== imgSize) {
+			cachedPixels = samplePixels(img, imgSize);
+		}
+		const px = cachedPixels;
+		const spacing = Math.max(1, Math.round(SPACING * dpr));
+		const maxR = MAX_RADIUS * dpr;
+		const minR = MIN_RADIUS * dpr;
+		const cornerR = Math.round(CORNER_RADIUS * dpr);
 		const dots = [];
 
 		for (let y = 0; y < imgSize; y += spacing) {
 			for (let x = 0; x < imgSize; x += spacing) {
 				const i = (y * imgSize + x) * 4;
 				if (px[i + 3] < 128) continue;
+				if (!inRoundedRect(x + padPx, y + padPx, padPx, imgSize, cornerR)) continue;
 
-				if (!inRoundedRect(x + padPx, y + padPx, padPx, imgSize, radius)) continue;
+				const rawR = px[i];
+				const rawG = px[i + 1];
+				const rawB = px[i + 2];
+				const lum = (0.299 * rawR + 0.587 * rawG + 0.114 * rawB) / 255;
 
-				const lum = (0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2]) / 255;
-				const brightness = Math.pow(lum, GAMMA);
+				// Light bg: darkness drives dot size (shadows = big, highlights = nothing).
+				// Dark bg: brightness drives dot size (highlights = big, shadows = nothing).
+				const signal = light ? 1 - lum : lum;
+				const radius = maxR * Math.pow(Math.max(0, Math.min(1, signal)), TONE_CURVE);
+				if (radius < minR) continue;
 
-				const bx = Math.floor(x / spacing) % 8;
-				const by = Math.floor(y / spacing) % 8;
-				// Bright areas (face): almost no dithering. Dark areas (edges): heavy dithering.
-				const threshold = BAYER[by][bx] * (1 - brightness * 0.92) * 0.898;
-				if (brightness <= threshold) continue;
+				const [cr, cg, cb] = processColor(rawR, rawG, rawB, light);
+				const color = `rgba(${cr},${cg},${cb},1)`;
 
-				const [r, g, b] = boostColor(px[i], px[i + 1], px[i + 2]);
-				const alpha = 0.67 + brightness * 0.22;
-				const glowAlpha = 0.065 + brightness * 0.125;
-				// Distance from center: 0 at middle, 1 at corner
 				const dx = (x - imgSize / 2) / (imgSize / 2);
 				const dy = (y - imgSize / 2) / (imgSize / 2);
 				const dist = Math.min(1, Math.sqrt(dx * dx + dy * dy));
-				// No swirl in center, ramps up at edges
-				const swirlDist = Math.max(0, dist - 0.4) / 0.6; // starts at 40% from center
+				const swirlDist = Math.max(0, dist - 0.4) / 0.6;
 				const swirlScale = 0.05 + swirlDist * swirlDist * 2.5;
 
 				const posX = x + padPx;
@@ -176,9 +197,6 @@ const total = size + pad * 2;
 				const nxv = posX * 0.006;
 				const nyv = posY * 0.006;
 
-				// Entry animation: inside-out staggered fade. Jitter grows
-				// with radius so the outer ring dissolves in rather than
-				// arriving as a tight front. No positional motion.
 				const jitterRange = 0.18 + dist * 0.45;
 				const entryJitter = (Math.random() - 0.5) * jitterRange;
 				const entryDelay = Math.max(0, dist * ENTRY_MAX_DELAY + entryJitter);
@@ -186,20 +204,18 @@ const total = size + pad * 2;
 				dots.push({
 					x: posX,
 					y: posY,
-					color: `rgba(${r},${g},${b},${alpha})`,
-					glowColor: `rgba(${r},${g},${b},${glowAlpha})`,
+					radius,
+					color,
 					swirlScale,
 					ox: 0,
 					oy: 0,
 					fx: posX,
 					fy: posY,
 					phase,
-					// Precomputed swirl coefficients
 					ax: nxv * 2.3,
 					ay: nyv * 1.9,
 					mx: nxv * 1.1 + nyv * 1.5,
 					p7: phase * 0.7,
-					// Entry animation
 					entryDelay,
 					entryAlpha: 0,
 				});
@@ -223,12 +239,11 @@ const total = size + pad * 2;
 		const ripS = RIPPLE_STRENGTH * dpr;
 
 		const age = (now - startMs) / 1000;
-		t += SWIRL_SPEED * 0.016; // ~60fps normalized
+		t += SWIRL_SPEED * 0.016;
 		const swirlA = SWIRL_AMP * dpr;
 		const tSlow = t * 0.6;
 		const tMicro = t * 0.3;
 
-		// Entry-done once the latest-possible dot has finished its fade
 		if (!entryDone && age > ENTRY_MAX_DELAY + ENTRY_FADE + 0.2) {
 			entryDone = true;
 		}
@@ -241,12 +256,10 @@ const total = size + pad * 2;
 			nextRandomRippleMs = scheduleNextRandomRipple(now);
 		}
 
-		// Prune dead ripples
 		if (ripples.length > 0) {
 			ripples = ripples.filter((r) => now - r.t < RIPPLE_LIFE);
 		}
 
-		// Precompute per-frame ripple state
 		const nRipples = ripples.length;
 		let ripRadii = null;
 		let ripFades = null;
@@ -267,12 +280,11 @@ const total = size + pad * 2;
 		ctx.clearRect(0, 0, w, h);
 		ctx.globalAlpha = 1;
 
-		// PASS 1: physics update + swirl — compute fx/fy once and cache
+		// PASS 1: physics update + swirl — cache fx/fy per dot
 		const N = allDots.length;
 		for (let i = 0; i < N; i++) {
 			const dot = allDots[i];
 
-			// Pond repulsion (squared-distance check avoids a sqrt when far)
 			let targetOx = 0;
 			let targetOy = 0;
 			if (hovering) {
@@ -292,7 +304,6 @@ const total = size + pad * 2;
 				}
 			}
 
-			// Ripple forces with AABB early reject
 			for (let ri = 0; ri < nRipples; ri++) {
 				const rip = ripples[ri];
 				const rx = dot.x - rip.x;
@@ -317,7 +328,6 @@ const total = size + pad * 2;
 			dot.ox *= POND_DECAY;
 			dot.oy *= POND_DECAY;
 
-			// Per-dot entry animation: staggered fade only, no motion
 			if (!entryDone) {
 				const rawP = (age - dot.entryDelay) / ENTRY_FADE;
 				if (rawP <= 0) {
@@ -325,13 +335,11 @@ const total = size + pad * 2;
 				} else if (rawP >= 1) {
 					dot.entryAlpha = 1;
 				} else {
-					// ease-out cubic
 					const inv = 1 - rawP;
 					dot.entryAlpha = 1 - inv * inv * inv;
 				}
 			}
 
-			// Continuous swirl using precomputed per-dot coefficients
 			const p = dot.phase;
 			const angle = Math.sin(dot.ax + t + p) * Math.cos(dot.ay - tSlow + dot.p7) * TWO_PI;
 			const swirlMag = swirlA * dot.swirlScale * (0.4 + 0.6 * Math.sin(dot.mx + tMicro + p));
@@ -339,36 +347,17 @@ const total = size + pad * 2;
 			dot.fy = dot.y + dot.oy + Math.sin(angle) * swirlMag;
 		}
 
-		// PASS 2: glow layer (screen composite)
-		const glowPad = Math.max(1, Math.round(dpr));
-		const glowSize = dotSize + glowPad * 2;
-		ctx.globalCompositeOperation = "screen";
-		if (entryDone) {
-			ctx.globalAlpha = 1;
-			for (let i = 0; i < N; i++) {
-				const dot = allDots[i];
-				ctx.fillStyle = dot.glowColor;
-				ctx.fillRect(dot.fx - glowPad, dot.fy - glowPad, glowSize, glowSize);
-			}
-		} else {
-			for (let i = 0; i < N; i++) {
-				const dot = allDots[i];
-				const a = dot.entryAlpha;
-				if (a <= 0.001) continue;
-				ctx.globalAlpha = a;
-				ctx.fillStyle = dot.glowColor;
-				ctx.fillRect(dot.fx - glowPad, dot.fy - glowPad, glowSize, glowSize);
-			}
-		}
-
-		// PASS 3: main dots
-		ctx.globalCompositeOperation = "source-over";
+		// PASS 2: halftone dots as circles, varying radius.
+		// multiply on light bg preserves hue; screen on dark bg adds light.
+		ctx.globalCompositeOperation = isLight() ? "multiply" : "screen";
 		if (entryDone) {
 			ctx.globalAlpha = 1;
 			for (let i = 0; i < N; i++) {
 				const dot = allDots[i];
 				ctx.fillStyle = dot.color;
-				ctx.fillRect(dot.fx, dot.fy, dotSize, dotSize);
+				ctx.beginPath();
+				ctx.arc(dot.fx, dot.fy, dot.radius, 0, TWO_PI);
+				ctx.fill();
 			}
 		} else {
 			for (let i = 0; i < N; i++) {
@@ -377,7 +366,9 @@ const total = size + pad * 2;
 				if (a <= 0.001) continue;
 				ctx.globalAlpha = a;
 				ctx.fillStyle = dot.color;
-				ctx.fillRect(dot.fx, dot.fy, dotSize, dotSize);
+				ctx.beginPath();
+				ctx.arc(dot.fx, dot.fy, dot.radius, 0, TWO_PI);
+				ctx.fill();
 			}
 		}
 
@@ -389,7 +380,6 @@ const total = size + pad * 2;
 		const cssTotalSize = wrap.clientWidth;
 		const dpr = Math.min(window.devicePixelRatio || 1, 2);
 		const totalSize = Math.round(cssTotalSize * dpr);
-		// Compute padding in canvas pixels from the CSS margin
 		const style = getComputedStyle(wrap);
 		const cssImgSize = cssTotalSize + parseFloat(style.marginLeft) * 2;
 		padPx = Math.round(40 * dpr);
@@ -398,6 +388,10 @@ const total = size + pad * 2;
 		canvas.width = totalSize;
 		canvas.height = totalSize;
 
+		cachedImg = img;
+		cachedImgSize = imgSize;
+		cachedDpr = dpr;
+		cachedPixels = null;
 		allDots = buildDots(img, imgSize, dpr);
 		entryDone = false;
 
@@ -405,6 +399,17 @@ const total = size + pad * 2;
 		startMs = performance.now();
 		nextRandomRippleMs = scheduleNextRandomRipple(startMs);
 		requestAnimationFrame(render);
+
+		if (!process._themeObserverAttached) {
+			const themeObserver = new MutationObserver(() => {
+				if (!cachedImg) return;
+				allDots = buildDots(cachedImg, cachedImgSize, cachedDpr);
+				entryDone = true;
+				for (let i = 0; i < allDots.length; i++) allDots[i].entryAlpha = 1;
+			});
+			themeObserver.observe(htmlEl, { attributes: true, attributeFilter: ["data-theme"] });
+			process._themeObserverAttached = true;
+		}
 
 		canvas.addEventListener("mousemove", (e) => {
 			const r = canvas.getBoundingClientRect();
@@ -436,7 +441,6 @@ const total = size + pad * 2;
 				cursorPx = ((e.touches[0].clientX - r.left) / r.width) * canvas.width;
 				cursorPy = ((e.touches[0].clientY - r.top) / r.height) * canvas.height;
 				hovering = true;
-				// Ripple on tap
 				ripples.push({
 					x: cursorPx,
 					y: cursorPy,

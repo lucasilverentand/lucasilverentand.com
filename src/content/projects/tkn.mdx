@@ -1,0 +1,34 @@
+---
+name: tkn
+description: Shell proxy that optimizes CLI output for AI coding assistants by reducing token usage
+owner: lucasilverentand
+url: https://github.com/lucasilverentand/tkn
+topics: [cli, rust, ai-tools, token-optimization]
+tags:
+  type: [cli]
+  framework: []
+  language: [rust]
+date: 2026-02-12
+featured: true
+---
+
+## Background
+
+tkn is a Rust shell proxy that wraps noisy CLI commands and trims their output
+before it hits an AI coding assistant's context window. Think `find`, `ls -R`,
+`npm install`, verbose test runners — commands that routinely dump thousands of
+tokens of repetitive noise. tkn collapses that into a digest (paths and counts
+instead of full trees, errors instead of full logs) and caches the full output
+behind a reference you can expand on demand.
+
+## What I learned
+
+{/* TODO: fill in — the shape of CLI noise across real workflows, when truncation helps vs. hides bugs. */}
+
+## Skills used
+
+{/* TODO: fill in — Rust, process spawning, PTY handling, output diffing. */}
+
+## Skills developed
+
+{/* TODO: fill in — reasoning about AI context budgets, designing reversible lossy compression. */}

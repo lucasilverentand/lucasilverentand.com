@@ -1,0 +1,34 @@
+---
+name: tarmac
+description: Native macOS app that runs ephemeral GitHub Actions runners inside virtualized macOS VMs on Apple Silicon
+owner: lucasilverentand
+url: https://github.com/lucasilverentand/tarmac
+platform: macos
+topics: [ci-cd, github-actions, macos, virtualization, apple-silicon]
+tags:
+  type: [app]
+  framework: [swiftui]
+  language: [swift]
+date: 2026-03-12
+featured: true
+---
+
+## Background
+
+tarmac is a native macOS app that provisions ephemeral GitHub Actions runners
+inside macOS VMs on Apple Silicon using Apple's Virtualization framework. Each
+job gets a clean, disposable VM, so builds can't leak state between runs. It's
+aimed at replacing the hosted macOS runner bill for SevenTwo Studio's iOS and
+macOS CI pipelines.
+
+## What I learned
+
+{/* TODO: fill in — VZVirtualMachine quirks, snapshot/restore tradeoffs, runner lifecycle. */}
+
+## Skills used
+
+{/* TODO: fill in — Swift concurrency, Apple Virtualization framework, GitHub Actions self-hosted runner protocol. */}
+
+## Skills developed
+
+{/* TODO: fill in — operating a runner fleet, VM image baking, cost modeling. */}

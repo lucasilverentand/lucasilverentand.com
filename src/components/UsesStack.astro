@@ -2,54 +2,56 @@
 import { Icon } from "astro-icon/components";
 import { uses } from "../data/uses";
 
-const iconMap = new Map<string, string>();
-for (const cat of uses) {
-	for (const tool of cat.tools) {
-		if (tool.icon && !iconMap.has(tool.icon)) {
-			iconMap.set(tool.icon, tool.name);
-		}
-	}
-}
-const logos = Array.from(iconMap, ([icon, name]) => ({ icon, name }));
-
-const halfway = Math.ceil(logos.length / 2);
-const row1 = logos.slice(0, halfway);
-const row2 = logos.slice(halfway);
+const allTools = uses.flatMap((cat) => cat.tools);
 ---
 
 <section class="pt-16 pb-20 border-t border-border-subtle">
 	<div class="max-w-[960px] mx-auto px-6">
 		<div class="flex items-baseline gap-3 mb-8 fade-in">
 			<h2 class="font-display text-[32px] font-normal">My Stack</h2>
-			<span class="font-mono text-[13px] text-text-faint">tools & resources</span>
+			<span class="font-mono text-[13px] text-text-faint">
+				{allTools.length} tools · why &amp; how
+			</span>
 		</div>
 
-		<div class="marquee-wrap fade-in">
-			<div class="marquee-row">
-				<div class="marquee-track">
-					{
-						[...row1, ...row1].map((logo) => (
-							<div class="logo-chip" title={logo.name}>
-								<Icon name={logo.icon} size={30} />
+		<div class="stack-grid">
+			{
+				allTools.map((tool, i) => (
+					<article class="stack-block fade-in" data-offset={i % 4}>
+						<div class="stack-block-header">
+							<div class="stack-block-logo">
+								{tool.icon ? (
+									<Icon name={tool.icon} size={22} />
+								) : (
+									<span class="stack-block-logo-fallback">
+										{tool.name.slice(0, 1).toUpperCase()}
+									</span>
+								)}
 							</div>
-						))
-					}
-				</div>
-			</div>
-			<div class="marquee-row reverse">
-				<div class="marquee-track">
-					{
-						[...row2, ...row2].map((logo) => (
-							<div class="logo-chip" title={logo.name}>
-								<Icon name={logo.icon} size={30} />
+							<span class="stack-block-name">{tool.name}</span>
+						</div>
+						{(tool.why || tool.how) && (
+							<div class="stack-block-body">
+								{tool.why && (
+									<div class="stack-block-row">
+										<span class="stack-block-label">Why</span>
+										<p>{tool.why}</p>
+									</div>
+								)}
+								{tool.how && (
+									<div class="stack-block-row">
+										<span class="stack-block-label">How</span>
+										<p>{tool.how}</p>
+									</div>
+								)}
 							</div>
-						))
-					}
-				</div>
-			</div>
+						)}
+					</article>
+				))
+			}
 		</div>
 
-		<div class="flex justify-center mt-12 fade-in">
+		<div class="flex justify-center mt-14 fade-in">
 			<a href="/uses" class="uses-cta">
 				<span>See what I use and am familiar with</span>
 				<svg
@@ -72,66 +74,104 @@ const row2 = logos.slice(halfway);
 </section>
 
 <style>
-	.marquee-wrap {
-		mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
-		-webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+	.stack-grid {
+		columns: 3 240px;
+		column-gap: 14px;
 	}
-
-	.marquee-row {
-		display: flex;
-		overflow: hidden;
-	}
-	.marquee-row + .marquee-row {
-		margin-top: 14px;
-	}
-
-	.marquee-track {
-		display: flex;
-		width: max-content;
-		animation: marquee 45s linear infinite;
-		will-change: transform;
-	}
-	.marquee-row.reverse .marquee-track {
-		animation-direction: reverse;
-		animation-duration: 50s;
-	}
-
-	.marquee-wrap:hover .marquee-track {
-		animation-play-state: paused;
-	}
-
-	@keyframes marquee {
-		from {
-			transform: translate3d(0, 0, 0);
+	@media (max-width: 820px) {
+		.stack-grid {
+			columns: 2 220px;
 		}
-		to {
-			transform: translate3d(-50%, 0, 0);
+	}
+	@media (max-width: 540px) {
+		.stack-grid {
+			columns: 1;
 		}
 	}
 
-	.logo-chip {
-		flex-shrink: 0;
-		width: 76px;
-		height: 76px;
-		margin-right: 14px;
+	.stack-block {
+		break-inside: avoid;
+		display: block;
+		width: 100%;
+		margin: 0 0 14px;
+		padding: 18px 20px 20px;
+		background: var(--color-surface-raised);
+		border: 1px solid var(--color-border-subtle);
+		border-radius: 14px;
+		transition:
+			border-color 0.2s,
+			transform 0.25s,
+			box-shadow 0.25s,
+			background 0.2s;
+	}
+	.stack-block[data-offset="1"] {
+		margin-top: 22px;
+	}
+	.stack-block[data-offset="3"] {
+		margin-top: 10px;
+	}
+	.stack-block:hover {
+		border-color: var(--color-border-strong);
+		background: var(--color-surface-elevated);
+		transform: translateY(-2px);
+		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+	}
+
+	.stack-block-header {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		margin-bottom: 14px;
+	}
+	.stack-block-logo {
+		width: 32px;
+		height: 32px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		background: var(--color-surface);
 		border: 1px solid var(--color-border-subtle);
-		border-radius: 16px;
-		background: var(--color-surface-raised);
-		color: var(--color-text-muted);
-		transition:
-			color 0.2s,
-			border-color 0.2s,
-			transform 0.25s,
-			background 0.2s;
-	}
-	.logo-chip:hover {
+		border-radius: 8px;
 		color: var(--color-text-primary);
-		border-color: var(--color-border-strong);
-		background: var(--color-surface-elevated);
-		transform: translateY(-3px);
+		flex-shrink: 0;
+	}
+	.stack-block-logo-fallback {
+		font-family: var(--font-mono);
+		font-size: 13px;
+		font-weight: 600;
+		color: var(--color-text-muted);
+	}
+	.stack-block-name {
+		font-family: var(--font-mono);
+		font-size: 13px;
+		font-weight: 600;
+		color: var(--color-text-primary);
+		letter-spacing: 0.01em;
+	}
+
+	.stack-block-body {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+	}
+	.stack-block-row {
+		display: block;
+	}
+	.stack-block-label {
+		display: block;
+		font-family: var(--font-mono);
+		font-size: 10px;
+		font-weight: 500;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: var(--color-text-faint);
+		margin-bottom: 4px;
+	}
+	.stack-block-row p {
+		font-size: 13px;
+		line-height: 1.55;
+		color: var(--color-text-muted);
+		margin: 0;
 	}
 
 	.uses-cta {
@@ -166,21 +206,13 @@ const row2 = logos.slice(halfway);
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		.marquee-track {
-			animation: none;
-		}
-		.logo-chip:hover,
+		.stack-block:hover,
 		.uses-cta:hover {
 			transform: none;
 		}
 	}
 
 	@media (max-width: 640px) {
-		.logo-chip {
-			width: 64px;
-			height: 64px;
-			border-radius: 14px;
-		}
 		.uses-cta {
 			font-size: 13px;
 			padding: 16px 24px;

@@ -16,9 +16,15 @@ export const uses: ToolCategory[] = [
 		name: "Hardware",
 		tools: [
 			{
-				name: "MacBook Pro",
-				description: "Primary development machine.",
-				url: "https://apple.com/macbook-pro",
+				name: "Mac Studio",
+				description: "Main desk setup — the workhorse for everything development.",
+				url: "https://apple.com/mac-studio",
+				icon: "simple-icons:apple",
+			},
+			{
+				name: "MacBook Air",
+				description: "Travel machine — light, silent, and enough power for anything on the go.",
+				url: "https://apple.com/macbook-air",
 				icon: "simple-icons:apple",
 			},
 			{

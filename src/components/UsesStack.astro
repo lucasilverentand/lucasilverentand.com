@@ -1,0 +1,189 @@
+---
+import { Icon } from "astro-icon/components";
+import { uses } from "../data/uses";
+
+const iconMap = new Map<string, string>();
+for (const cat of uses) {
+	for (const tool of cat.tools) {
+		if (tool.icon && !iconMap.has(tool.icon)) {
+			iconMap.set(tool.icon, tool.name);
+		}
+	}
+}
+const logos = Array.from(iconMap, ([icon, name]) => ({ icon, name }));
+
+const halfway = Math.ceil(logos.length / 2);
+const row1 = logos.slice(0, halfway);
+const row2 = logos.slice(halfway);
+---
+
+<section class="pt-16 pb-20 border-t border-border-subtle">
+	<div class="max-w-[960px] mx-auto px-6">
+		<div class="flex items-baseline gap-3 mb-8 fade-in">
+			<h2 class="font-display text-[32px] font-normal">My Stack</h2>
+			<span class="font-mono text-[13px] text-text-faint">tools & resources</span>
+		</div>
+
+		<div class="marquee-wrap fade-in">
+			<div class="marquee-row">
+				<div class="marquee-track">
+					{
+						[...row1, ...row1].map((logo) => (
+							<div class="logo-chip" title={logo.name}>
+								<Icon name={logo.icon} size={30} />
+							</div>
+						))
+					}
+				</div>
+			</div>
+			<div class="marquee-row reverse">
+				<div class="marquee-track">
+					{
+						[...row2, ...row2].map((logo) => (
+							<div class="logo-chip" title={logo.name}>
+								<Icon name={logo.icon} size={30} />
+							</div>
+						))
+					}
+				</div>
+			</div>
+		</div>
+
+		<div class="flex justify-center mt-12 fade-in">
+			<a href="/uses" class="uses-cta">
+				<span>See what I use and am familiar with</span>
+				<svg
+					class="cta-arrow"
+					width="18"
+					height="18"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					aria-hidden="true"
+				>
+					<path d="M5 12h14M13 5l7 7-7 7"></path>
+				</svg>
+			</a>
+		</div>
+	</div>
+</section>
+
+<style>
+	.marquee-wrap {
+		mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+		-webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+	}
+
+	.marquee-row {
+		display: flex;
+		overflow: hidden;
+	}
+	.marquee-row + .marquee-row {
+		margin-top: 14px;
+	}
+
+	.marquee-track {
+		display: flex;
+		width: max-content;
+		animation: marquee 45s linear infinite;
+		will-change: transform;
+	}
+	.marquee-row.reverse .marquee-track {
+		animation-direction: reverse;
+		animation-duration: 50s;
+	}
+
+	.marquee-wrap:hover .marquee-track {
+		animation-play-state: paused;
+	}
+
+	@keyframes marquee {
+		from {
+			transform: translate3d(0, 0, 0);
+		}
+		to {
+			transform: translate3d(-50%, 0, 0);
+		}
+	}
+
+	.logo-chip {
+		flex-shrink: 0;
+		width: 76px;
+		height: 76px;
+		margin-right: 14px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border: 1px solid var(--color-border-subtle);
+		border-radius: 16px;
+		background: var(--color-surface-raised);
+		color: var(--color-text-muted);
+		transition:
+			color 0.2s,
+			border-color 0.2s,
+			transform 0.25s,
+			background 0.2s;
+	}
+	.logo-chip:hover {
+		color: var(--color-text-primary);
+		border-color: var(--color-border-strong);
+		background: var(--color-surface-elevated);
+		transform: translateY(-3px);
+	}
+
+	.uses-cta {
+		display: inline-flex;
+		align-items: center;
+		gap: 12px;
+		font-family: var(--font-mono);
+		font-size: 14px;
+		font-weight: 500;
+		color: var(--color-text-primary);
+		background: var(--color-surface-raised);
+		border: 1px solid var(--color-border-strong);
+		border-radius: 999px;
+		padding: 18px 32px;
+		transition:
+			background 0.2s,
+			border-color 0.2s,
+			transform 0.2s,
+			box-shadow 0.2s;
+	}
+	.uses-cta:hover {
+		background: var(--color-surface-elevated);
+		border-color: var(--color-text-primary);
+		transform: translateY(-2px);
+		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+	}
+	.uses-cta .cta-arrow {
+		transition: transform 0.2s;
+	}
+	.uses-cta:hover .cta-arrow {
+		transform: translateX(4px);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.marquee-track {
+			animation: none;
+		}
+		.logo-chip:hover,
+		.uses-cta:hover {
+			transform: none;
+		}
+	}
+
+	@media (max-width: 640px) {
+		.logo-chip {
+			width: 64px;
+			height: 64px;
+			border-radius: 14px;
+		}
+		.uses-cta {
+			font-size: 13px;
+			padding: 16px 24px;
+		}
+	}
+</style>

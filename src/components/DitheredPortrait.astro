@@ -30,11 +30,15 @@ const total = size + pad * 2;
 	// With source-over + slight alpha, dots render at ~photo colors and
 	// density emerges from dot size alone. Minimal sat bump just adds a
 	// touch of screen vibrance to match the camera's saturation.
-	const COLOR_SAT_LIGHT = 1.1;
-	const COLOR_SAT_DARK = 1.22;
-	const COLOR_LIFT_LIGHT = 1.0;
-	const COLOR_LIFT_DARK = 1.12;
-	const DOT_ALPHA_LIGHT = 0.92;
+	const COLOR_SAT_LIGHT = 1.45;
+	const COLOR_SAT_DARK = 1.05;
+	// Light mode: dim slightly so dots read as ink, not wash.
+	// Dark mode: lift hard — the photo's mid-tones are too dark to
+	// register against the dark card; we need to push them brighter
+	// before screen compositing layers them on the bg.
+	const COLOR_LIFT_LIGHT = 0.88;
+	const COLOR_LIFT_DARK = 1.25;
+	const DOT_ALPHA_LIGHT = 1;
 	const WARM_R = 1.0;
 	const WARM_G = 1.0;
 	const WARM_B = 1.0;
@@ -124,9 +128,14 @@ const total = size + pad * 2;
 		g = Math.min(255, g * lift);
 		b = Math.min(255, b * lift);
 		const avg = (r + g + b) / 3;
-		r = avg + (r - avg) * sat;
-		g = avg + (g - avg) * sat;
-		b = avg + (b - avg) * sat;
+		// Scale saturation by chroma so near-neutrals (teeth, eye whites)
+		// don't get a color cast amplified out of nothing. Pixels that
+		// already have real chroma get the full boost; near-grays stay gray.
+		const chroma = Math.max(Math.abs(r - avg), Math.abs(g - avg), Math.abs(b - avg)) / 128;
+		const satMix = 1 + (sat - 1) * Math.min(1, chroma * 3);
+		r = avg + (r - avg) * satMix;
+		g = avg + (g - avg) * satMix;
+		b = avg + (b - avg) * satMix;
 		// Warm shift: lift R, cut B. Pulls skin out of the mauve/cool cast
 		// the raw photo + multiply compositing tends toward. R and G stay
 		// closer together so we don't swing the image orange.

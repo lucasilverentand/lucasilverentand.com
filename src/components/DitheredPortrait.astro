@@ -19,9 +19,9 @@ const total = size + pad * 2;
 	// MIN is the floor for even the brightest source pixels so highlights
 	// still carry real color — without a floor, bright cells drop out and
 	// the card bg leaks through, washing the whole image toward gray.
-	const SPACING = 2.1; // grid pitch in CSS px
-	const MAX_RADIUS = 1.25; // shadow dots
-	const MIN_RADIUS = 0.75; // highlight dots — big enough to show color
+	const SPACING = 1.5; // grid pitch in CSS px
+	const MAX_RADIUS = 0.9; // shadow dots
+	const MIN_RADIUS = 0.55; // highlight dots — big enough to show color
 	const TONE_CURVE = 0.65; // gamma on inkness signal (within [MIN,MAX])
 
 	// === Color refinement (gentle) ===

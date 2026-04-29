@@ -15,20 +15,33 @@ const total = size + pad * 2;
 
 <script type="module">
 	// === Halftone parameters ===
-	// Every grid cell gets a dot; dot RADIUS scales with inkness signal.
-	// No thresholding, no dropout — tone comes from dot size, like print.
-	const SPACING = 1.9; // grid pitch in CSS px
-	const MAX_RADIUS = 1.05; // max dot radius in CSS px
-	const MIN_RADIUS = 0.28; // skip dots smaller than this (invisible)
-	const TONE_CURVE = 0.62; // gamma on inkness signal — lower = fatter mids
+	// Every non-transparent cell gets a dot; size lives in [MIN, MAX].
+	// MIN is the floor for even the brightest source pixels so highlights
+	// still carry real color — without a floor, bright cells drop out and
+	// the card bg leaks through, washing the whole image toward gray.
+	const SPACING = 1.5; // grid pitch in CSS px
+	const MAX_RADIUS = 0.9; // shadow dots
+	const MIN_RADIUS = 0.55; // highlight dots — big enough to show color
+	const TONE_CURVE = 0.65; // gamma on inkness signal (within [MIN,MAX])
 
 	// === Color refinement (gentle) ===
-	// Halftone density handles "presence" via dot size, so we don't need
-	// the heavy saturation/lift stack anymore. Just a small nudge.
-	const COLOR_SAT_LIGHT = 1.32;
-	const COLOR_SAT_DARK = 1.22;
-	const COLOR_LIFT_LIGHT = 0.92; // tiny pre-darken so multiply lands with weight
-	const COLOR_LIFT_DARK = 1.12; // screen on dark bg benefits from brightness
+	// Light mode uses source-over, not multiply: overlapping dots would
+	// compound-darken with multiply, turning mid-tone hair into near-black.
+	// With source-over + slight alpha, dots render at ~photo colors and
+	// density emerges from dot size alone. Minimal sat bump just adds a
+	// touch of screen vibrance to match the camera's saturation.
+	const COLOR_SAT_LIGHT = 1.45;
+	const COLOR_SAT_DARK = 1.05;
+	// Light mode: dim slightly so dots read as ink, not wash.
+	// Dark mode: lift hard — the photo's mid-tones are too dark to
+	// register against the dark card; we need to push them brighter
+	// before screen compositing layers them on the bg.
+	const COLOR_LIFT_LIGHT = 0.88;
+	const COLOR_LIFT_DARK = 1.25;
+	const DOT_ALPHA_LIGHT = 1;
+	const WARM_R = 1.0;
+	const WARM_G = 1.0;
+	const WARM_B = 1.0;
 
 	// === Physics ===
 	const SWIRL_AMP = 3.5;
@@ -115,9 +128,20 @@ const total = size + pad * 2;
 		g = Math.min(255, g * lift);
 		b = Math.min(255, b * lift);
 		const avg = (r + g + b) / 3;
-		r = avg + (r - avg) * sat;
-		g = avg + (g - avg) * sat;
-		b = avg + (b - avg) * sat;
+		// Scale saturation by chroma so near-neutrals (teeth, eye whites)
+		// don't get a color cast amplified out of nothing. Pixels that
+		// already have real chroma get the full boost; near-grays stay gray.
+		const chroma = Math.max(Math.abs(r - avg), Math.abs(g - avg), Math.abs(b - avg)) / 128;
+		const satMix = 1 + (sat - 1) * Math.min(1, chroma * 3);
+		r = avg + (r - avg) * satMix;
+		g = avg + (g - avg) * satMix;
+		b = avg + (b - avg) * satMix;
+		// Warm shift: lift R, cut B. Pulls skin out of the mauve/cool cast
+		// the raw photo + multiply compositing tends toward. R and G stay
+		// closer together so we don't swing the image orange.
+		r *= WARM_R;
+		g *= WARM_G;
+		b *= WARM_B;
 		return [
 			Math.min(255, Math.max(0, Math.round(r))),
 			Math.min(255, Math.max(0, Math.round(g))),
@@ -176,14 +200,16 @@ const total = size + pad * 2;
 				const rawB = px[i + 2];
 				const lum = (0.299 * rawR + 0.587 * rawG + 0.114 * rawB) / 255;
 
-				// Light bg: darkness drives dot size (shadows = big, highlights = nothing).
-				// Dark bg: brightness drives dot size (highlights = big, shadows = nothing).
-				const signal = light ? 1 - lum : lum;
-				const radius = maxR * Math.pow(Math.max(0, Math.min(1, signal)), TONE_CURVE);
-				if (radius < minR) continue;
+				// Light bg: darkness drives dot size (shadows = big, highlights = small).
+				// Dark bg: brightness drives dot size (highlights = big, shadows = small).
+				// Radius spans [minR, maxR] — highlights never go to zero,
+				// so every cell carries its photo color (no gray gaps).
+				const signal = Math.max(0, Math.min(1, light ? 1 - lum : lum));
+				const radius = minR + (maxR - minR) * Math.pow(signal, TONE_CURVE);
 
 				const [cr, cg, cb] = processColor(rawR, rawG, rawB, light);
-				const color = `rgba(${cr},${cg},${cb},1)`;
+				const dotAlpha = light ? DOT_ALPHA_LIGHT : 1;
+				const color = `rgba(${cr},${cg},${cb},${dotAlpha})`;
 
 				const dx = (x - imgSize / 2) / (imgSize / 2);
 				const dy = (y - imgSize / 2) / (imgSize / 2);
@@ -348,8 +374,10 @@ const total = size + pad * 2;
 		}
 
 		// PASS 2: halftone dots as circles, varying radius.
-		// multiply on light bg preserves hue; screen on dark bg adds light.
-		ctx.globalCompositeOperation = isLight() ? "multiply" : "screen";
+		// source-over on light bg: dots render at their own colors without
+		// compounding (multiply would darken each overlap, killing hair
+		// mid-tones). screen on dark bg: bright dots add light to dark bg.
+		ctx.globalCompositeOperation = isLight() ? "source-over" : "screen";
 		if (entryDone) {
 			ctx.globalAlpha = 1;
 			for (let i = 0; i < N; i++) {

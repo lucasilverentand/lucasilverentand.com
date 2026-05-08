@@ -8,6 +8,7 @@
 		"preview": "astro preview",
 		"sync:articles": "node scripts/sync-articles.mjs",
 		"design:screenshot": "node scripts/capture-page.mjs",
+		"og:generate": "node scripts/generate-og.mjs",
 		"deploy": "astro build && wrangler deploy",
 		"format": "biome format --write . && prettier --write .",
 		"format:check": "biome format . && prettier --check .",

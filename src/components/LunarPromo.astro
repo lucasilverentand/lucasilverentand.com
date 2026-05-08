@@ -1,3 +1,8 @@
+---
+import { Image } from "astro:assets";
+import lunarBg from "../assets/lunar-earthrise.jpg";
+---
+
 <section class="pb-5">
 	<div class="max-w-240 mx-auto px-6">
 		<a
@@ -7,11 +12,16 @@
 			class="lunar-promo group block relative rounded-[14px] overflow-hidden border border-[#1a1f2e] bg-black fade-in"
 		>
 			<div>
-				<img
-					src="https://raw.githubusercontent.com/lucasilverentand/artemis-lunar-wallpapers/main/thumbnails/earthrise-over-moon-limb.jpg"
+				<Image
+					src={lunarBg}
 					alt=""
-					class="lunar-bg absolute bottom-0 right-0 h-full rotate-y-180"
+					widths={[400, 600, 800]}
+					sizes="(max-width: 768px) 60vw, 480px"
+					format="webp"
+					quality={80}
+					class="lunar-bg absolute bottom-0 right-0 h-full max-w-none rotate-y-180"
 					loading="lazy"
+					decoding="async"
 				/>
 				<div class="promo-body relative p-9 max-md:p-6">
 					<div class="flex items-center gap-3 mb-4">

@@ -100,16 +100,16 @@ async function buildHtml() {
 				border-radius: 20px;
 				background: var(--surface-raised);
 				border: 1px solid var(--border-subtle);
-				padding: 56px 64px;
+				padding: 56px 72px;
 				display: flex;
 				align-items: center;
-				gap: 56px;
+				gap: 64px;
 			}
 
 			.portrait {
 				flex-shrink: 0;
-				width: 340px;
-				height: 340px;
+				width: 380px;
+				height: 380px;
 				border-radius: 999px;
 				overflow: hidden;
 				border: 1px solid var(--border-strong);
@@ -143,62 +143,48 @@ async function buildHtml() {
 				min-width: 0;
 				display: flex;
 				flex-direction: column;
-				gap: 22px;
+				gap: 28px;
 			}
 
 			.eyebrow {
 				display: inline-flex;
 				align-items: center;
-				gap: 10px;
+				gap: 14px;
 				font-family: "DM Mono", "JetBrains Mono", monospace;
-				font-size: 14px;
+				font-size: 22px;
 				font-weight: 400;
-				letter-spacing: 0.04em;
-				color: var(--text-muted);
+				letter-spacing: 0.02em;
+				color: var(--text-primary);
 				text-transform: lowercase;
 			}
 
 			.eyebrow .dot {
-				width: 8px;
-				height: 8px;
+				width: 14px;
+				height: 14px;
 				border-radius: 50%;
 				background: var(--accent);
-				box-shadow: 0 0 14px var(--accent);
+				box-shadow: 0 0 18px var(--accent);
 			}
 
 			.name {
 				font-family: "DM Serif Display", Georgia, serif;
 				font-weight: 400;
-				font-size: 88px;
-				line-height: 0.98;
-				letter-spacing: -0.01em;
+				font-size: 104px;
+				line-height: 0.95;
+				letter-spacing: -0.015em;
 				color: var(--text-primary);
 			}
 
 			.tagline {
-				font-size: 22px;
-				line-height: 1.5;
+				font-size: 32px;
+				line-height: 1.35;
 				color: var(--text-muted);
-				max-width: 520px;
+				max-width: 540px;
 			}
 
 			.tagline strong {
 				color: var(--text-primary);
 				font-weight: 500;
-			}
-
-			.meta {
-				display: flex;
-				align-items: center;
-				gap: 14px;
-				font-family: "DM Mono", "JetBrains Mono", monospace;
-				font-size: 14px;
-				color: var(--text-faint);
-				margin-top: 4px;
-			}
-
-			.meta .sep {
-				color: var(--border-strong);
 			}
 		</style>
 	</head>
@@ -214,18 +200,8 @@ async function buildHtml() {
 					<span class="eyebrow"><span class="dot"></span>lucasilverentand.com</span>
 					<h1 class="name">Luca<br />Silverentand</h1>
 					<p class="tagline">
-						Self-taught developer with <strong>15+ years</strong> of building apps,
-						infrastructure, and everything in between.
+						Self-taught developer.<br /><strong>15+ years</strong> building software.
 					</p>
-					<div class="meta">
-						<span>iOS</span>
-						<span class="sep">·</span>
-						<span>Rust</span>
-						<span class="sep">·</span>
-						<span>Web</span>
-						<span class="sep">·</span>
-						<span>AI tooling</span>
-					</div>
 				</div>
 			</div>
 		</div>
